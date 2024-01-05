@@ -83,7 +83,7 @@ export default defineNuxtConfig({
 
   /* 开启指定的地址 */
   devServer: {
-    port: 9000,
+    port: 8000,
     host: '0.0.0.0'
   },
 

@@ -1,6 +1,18 @@
+<script setup lang="ts">
+/* dom元素 */
+const fullWindow = ref<HTMLElement | null>(null);
+/* 仓库 */
+const useEditor = useEditorStore();
+
+const fullDown = (): void => {
+  if (fullWindow.value) {
+    useEditor.setDocumentTarget(fullWindow.value.id);
+  }
+};
+</script>
+
 <template>
-  <div class="flex flex-col items-center justify-center">
-    <h2>欢迎来到这里，宝贝</h2>
+  <div id="id" ref="fullWindow" class="h-screen w-screen bg-black" @mousedown="fullDown">
     <NuxtPage></NuxtPage>
   </div>
 </template>
