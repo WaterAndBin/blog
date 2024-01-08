@@ -3,15 +3,19 @@ const useEditorStore = defineStore('editor', {
   persist: true,
   state: () => {
     return {
-      documentTarget: '' as string
+      documentTarget: false as boolean
     };
   },
   actions: {
     /**
      * 设置点击的元素对象
      */
-    setDocumentTarget(target: string) {
-      this.documentTarget = target;
+    setDocumentTarget(target?: boolean) {
+      if (target) {
+        this.documentTarget = target;
+      } else {
+        this.documentTarget = !this.documentTarget;
+      }
     }
   }
 });

@@ -10,8 +10,11 @@ import {
 
 export default defineConfig({
   shortcuts: {
+    /* 这个按钮的默认是文本编辑器上面的按钮 */
     'button-default':
-      'px-6 py-2.5 text-base rounded-full mr-3 my-1 bg-transparent tracking-[2px] border-solid border-1 text-[#061a69]'
+      'bg-transparent w-12.5 h-11 rounded-md hover:bg-sky-200 mx-2 text-xs text-center flex-default flex-col',
+    /* 弹性盒子默认 */
+    'flex-default': 'flex justify-center items-center'
   },
   presets: [presetUno(), presetAttributify(), presetIcons(), presetTypography()],
   transformers: [transformerDirectives(), transformerVariantGroup()]
