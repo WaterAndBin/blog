@@ -36,7 +36,8 @@ module.exports = {
     'no-console': 'off', // 禁用对 console 的检查
     '@typescript-eslint/member-delimiter-style': 'off', // 禁用对 ; 检查
     "@typescript-eslint/no-floating-promises": "off", // 禁用每个方法都需要async await
-    "@typescript-eslint/strict-boolean-expressions": "off" // 禁用不能直接 undefined
+    "@typescript-eslint/strict-boolean-expressions": "off", // 禁用不能直接 undefined
+    "@typescript-eslint/prefer-function-type": "off"
   },
   overrides: [
     {

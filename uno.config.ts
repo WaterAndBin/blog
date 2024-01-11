@@ -12,7 +12,7 @@ export default defineConfig({
   shortcuts: {
     /* 这个按钮的默认是文本编辑器上面的按钮 */
     'button-default':
-      'bg-transparent w-12.5 h-11 rounded-md hover:bg-sky-200 mx-2 text-xs text-center flex-default flex-col',
+      'bg-transparent w-15 h-13 rounded-md hover:bg-sky-200 text-center flex-default flex-col',
     /* 弹性盒子默认 */
     'flex-default': 'flex justify-center items-center'
   },

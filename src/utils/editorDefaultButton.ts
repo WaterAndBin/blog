@@ -1,5 +1,42 @@
 export const editorButton: EditorButton[] = [
   {
+    name: 'editor-title.svg',
+    title: '标题',
+    hide: false,
+    children: [
+      {
+        name: 'editor-title1.svg',
+        title: '标题一',
+        actionsTitle: '标题',
+        actions: 'h1'
+      },
+      {
+        name: 'editor-title2.svg',
+        title: '标题二',
+        actionsTitle: '标题',
+        actions: 'h2'
+      },
+      {
+        name: 'editor-title3.svg',
+        title: '标题三',
+        actionsTitle: '标题',
+        actions: 'h3'
+      },
+      {
+        name: 'editor-title4.svg',
+        title: '标题四',
+        actionsTitle: '标题',
+        actions: 'h4'
+      },
+      {
+        name: 'editor-title5.svg',
+        title: '标题五',
+        actionsTitle: '标题',
+        actions: 'h5'
+      }
+    ]
+  },
+  {
     name: 'editor-bold.svg',
     title: '加粗'
   },
@@ -28,8 +65,23 @@ export const editorButton: EditorButton[] = [
     title: '无序列表'
   },
   {
-    name: '',
-    title: '对齐'
+    name: 'editor-align.svg',
+    title: '对齐',
+    hide: false,
+    children: [
+      {
+        name: 'editor-leftAlign.svg',
+        title: '左对齐',
+        actionsTitle: '对齐',
+        actions: 'h5'
+      },
+      {
+        name: 'editor-rightAlign.svg',
+        title: '右对齐',
+        actionsTitle: '对齐',
+        actions: 'h5'
+      }
+    ]
   },
   {
     name: 'editor-horizon.svg',
@@ -48,4 +100,15 @@ export const editorButton: EditorButton[] = [
 export interface EditorButton {
   name: string;
   title: string;
+  hide?: boolean;
+  children?: EditorButtonChild[];
+}
+
+export interface EditorButtonChild {
+  name: string;
+  title: string;
+  actionsTitle: string;
+  actions: string;
+  hide?: boolean;
+  children?: EditorButtonChild[];
 }
