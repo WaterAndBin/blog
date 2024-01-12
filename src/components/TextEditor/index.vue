@@ -43,11 +43,7 @@
         class="box-border min-h-100 w-full cursor-text overflow-hidden p-3 outline-0"
         @mouseup="getSelection"
       >
-        <p>
-          这是一个
-          <span class="highlight">高亮</span>
-          文字
-        </p>
+        <p></p>
       </div>
     </div>
   </div>
@@ -83,8 +79,13 @@ const handleButtonNav = (actions: string): void => {
       const parent = lastNode.value;
       /* 创建一个标签 */
       const newElement = document.createElement(actions);
-      /* 接收文章内容 */
-      newElement.innerHTML = parent.innerHTML;
+
+      /* 判读文章里面是否有内容 */
+      if (parent.innerHTML) {
+        /* 接收文章内容 */
+        newElement.innerHTML = parent.innerHTML;
+      }
+
       /* 替换 */
       parent.replaceWith(newElement);
       /* 重新绑定最后一个节点 */
@@ -96,12 +97,12 @@ const handleButtonNav = (actions: string): void => {
 /**
  * 获取鼠标点击的范围
  */
-const getSelection = (): void => {
+const getSelection = (e?: Event): void => {
   if (editor.value) {
     // 获取选择区域的对象
     const selection = window.getSelection();
     // 获取当前文档中被选中的文本所对应的第一个选区范围对象
-    if (selection && selection.rangeCount > 0) {
+    if (selection && selection.rangeCount > 0 && !editor?.value?.contains(e?.target as Node)) {
       const range = selection?.getRangeAt(0);
 
       console.log('====');
@@ -113,8 +114,8 @@ const getSelection = (): void => {
       if (range) {
         lastNode.value = range.commonAncestorContainer.parentNode as HTMLElement;
       }
-      console.log(lastNode.value);
     } else {
+      console.log('获取了editor的第一个子元素');
       lastNode.value = editor.value.childNodes[0] as HTMLElement;
     }
   }
