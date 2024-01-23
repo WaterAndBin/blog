@@ -39,11 +39,11 @@
         id="editor"
         ref="editor"
         contenteditable="true"
-        placeholder="请输入你想要的文章"
         class="box-border min-h-100 w-full cursor-text overflow-hidden p-3 outline-0"
         @mouseup="getSelection"
+        @keydown.enter="insertP"
       >
-        <p></p>
+        <p><br /></p>
       </div>
     </div>
   </div>
@@ -63,6 +63,8 @@ const editorNav = ref<HTMLElement | null>(null);
 
 /* 记录点击的最后一行 */
 const lastNode = ref<HTMLElement>();
+/* 哪些对象不能存在 */
+const selectActions = ['hold', 'color', 'delete'];
 
 const handleButtonNav = (actions: string): void => {
   if (editor.value) {
@@ -75,21 +77,29 @@ const handleButtonNav = (actions: string): void => {
     const target = editor.value;
 
     if (lastNode.value && target) {
-      // 获取当前选中的文档
-      const parent = lastNode.value;
-      /* 创建一个标签 */
-      const newElement = document.createElement(actions);
+      console.log('进来了');
 
-      /* 判读文章里面是否有内容 */
-      if (parent.innerHTML) {
-        /* 接收文章内容 */
-        newElement.innerHTML = parent.innerHTML;
+      /* 判断是不是整行处理的 */
+      if (!selectActions.includes(actions)) {
+        // 获取当前选中的文档
+        const parent = lastNode.value;
+        /* 创建一个标签 */
+        const newElement = document.createElement(actions);
+
+        /* 判读文章里面是否有内容 */
+        if (parent.innerHTML) {
+          /* 接收文章内容 */
+          newElement.innerHTML = parent.innerHTML;
+        }
+
+        /* 替换 */
+        parent.replaceWith(newElement);
+        /* 重新绑定最后一个节点 */
+        lastNode.value = newElement;
+      } else {
+        /* 部分处理 */
+        otherChange(actions);
       }
-
-      /* 替换 */
-      parent.replaceWith(newElement);
-      /* 重新绑定最后一个节点 */
-      lastNode.value = newElement;
     }
   }
 };
@@ -102,17 +112,11 @@ const getSelection = (e?: Event): void => {
     // 获取选择区域的对象
     const selection = window.getSelection();
     // 获取当前文档中被选中的文本所对应的第一个选区范围对象
-    if (selection && selection.rangeCount > 0 && !editor?.value?.contains(e?.target as Node)) {
+    if (selection && selection.rangeCount > 0 && editor?.value?.contains(e?.target as Node)) {
       const range = selection?.getRangeAt(0);
-
-      console.log('====');
-      console.log(lastNode.value);
-      console.log(range.toString());
-      console.log(range.startOffset);
-      console.log(range.endOffset);
-
       if (range) {
-        lastNode.value = range.commonAncestorContainer.parentNode as HTMLElement;
+        // lastNode.value = range.commonAncestorContainer.parentNode as HTMLElement;
+        lastNode.value = range.commonAncestorContainer as HTMLElement;
       }
     } else {
       console.log('获取了editor的第一个子元素');
@@ -121,9 +125,18 @@ const getSelection = (e?: Event): void => {
   }
 };
 
+/**
+ * 点击标题的时候
+ * @param data 数据
+ * @param index 序号
+ */
 const clickNav = (data: EditorButton, index: number): void => {
   if (data.hide !== undefined && data.hide !== null) {
     editorButton.setButtonHide(index);
+  }
+  console.log(data);
+  if (!data.hide && data.actions) {
+    handleButtonNav(data.actions);
   }
 };
 
@@ -137,9 +150,67 @@ const handleOutsideClick = (e: Event): void => {
   }
 };
 
+// const insertNewParagraph = () => {
+//   const selection = window.getSelection();
+//   console.log(selection);
+//   // if (selection) {
+//   //   const range = selection.getRangeAt(0);
+//   //   const newParagraph = document.createElement('p');
+//   //   newParagraph.innerHTML = '&nbsp;';
+//   //   range.insertNode(newParagraph);
+//   //   selection.removeAllRanges();
+//   //   selection.addRange(range);
+//   // }
+// };
+
+/**
+ * 检查文字，并且附上属性
+ * @param actions 选择的选项
+ */
+const otherChange = (actions: string): void => {
+  // 获取选择区域的对象
+  const selection = window.getSelection();
+  if (selection && selection.rangeCount > 0) {
+    const range = selection?.getRangeAt(0);
+
+    const selectedText = selection.toString();
+    range.deleteContents(); // 删除选中的内容
+    const span = document.createElement('span'); // 创建一个新的span元素
+    span.textContent = selectedText; // 设置span的内容为选中的文本
+    range.insertNode(span); // 将span插入到选中的位置
+  }
+};
+
+/**
+ * 插入p标签
+ */
+const insertP = (e: Event): void => {
+  // 获取光标位置或选择的文本
+  const selection = window.getSelection();
+  console.log();
+  if (selection) {
+    const range = selection.getRangeAt(0);
+    /* 位置 */
+    const offset = range.startOffset;
+    const lastNodeLength = lastNode.value?.textContent?.length;
+    if (
+      range.startContainer.parentNode instanceof Element &&
+      range.startContainer.parentNode.tagName !== 'P'
+    ) {
+      /* 如果长度相同的情况下 */
+      if (offset === lastNodeLength) {
+        document.execCommand('insertHTML', false, '<p><br/></p>');
+        e.preventDefault();
+      }
+    }
+  }
+};
+
 onMounted(() => {
   /* 挂载全局点击事件 */
   window.addEventListener('click', handleOutsideClick);
+  /* 先获取节点 */
+  getSelection();
 });
 
 onBeforeUnmount(() => {

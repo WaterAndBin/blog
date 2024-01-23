@@ -3,6 +3,7 @@ export const editorButton: EditorButton[] = [
     name: 'editor-title.svg',
     title: '标题',
     hide: false,
+    actions: 'title',
     children: [
       {
         name: 'editor-title1.svg',
@@ -38,36 +39,44 @@ export const editorButton: EditorButton[] = [
   },
   {
     name: 'editor-bold.svg',
-    title: '加粗'
+    title: '加粗',
+    actions: 'hold'
   },
   {
     name: 'editor-color.svg',
-    title: '颜色'
+    title: '颜色',
+    actions: 'color'
   },
   {
     name: 'editor-italic.svg',
-    title: '斜线'
+    title: '斜线',
+    actions: 'delete'
   },
   {
     name: 'editor-strikethrough.svg',
-    title: '删除线'
+    title: '删除线',
+    actions: 'delete'
   },
   {
     name: 'editor-underline.svg',
-    title: '下划线'
+    title: '下划线',
+    actions: 'delete'
   },
   {
     name: 'editor-orderedLists.svg',
-    title: '有序列表'
+    title: '有序列表',
+    actions: 'delete'
   },
   {
     name: 'editor-unorderedListings.svg',
-    title: '无序列表'
+    title: '无序列表',
+    actions: 'delete'
   },
   {
     name: 'editor-align.svg',
     title: '对齐',
     hide: false,
+    actions: 'delete',
     children: [
       {
         name: 'editor-leftAlign.svg',
@@ -85,21 +94,25 @@ export const editorButton: EditorButton[] = [
   },
   {
     name: 'editor-horizon.svg',
-    title: '水平线'
+    title: '水平线',
+    actions: 'delete'
   },
   {
     name: 'editor.codeBlocks.svg',
-    title: '代码块'
+    title: '代码块',
+    actions: 'delete'
   },
   {
     name: 'editor-image.svg',
-    title: '图像'
+    title: '图像',
+    actions: 'delete'
   }
 ];
 
 export interface EditorButton {
   name: string;
   title: string;
+  actions: string;
   hide?: boolean;
   children?: EditorButtonChild[];
 }
