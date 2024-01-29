@@ -31,3 +31,16 @@ https://github.com/simoneb/fast-folder-size/issues/60
 1. 能组件化开始就组件化开发，创建的每一个值都必须要有类型限制（注意：非特殊情况请不要使用 any ）
 2. 命名都使用大驼峰写法，组件命名统一大写（除非 index.vue ），请勿使用中文拼英进行命名（比如，名字写name，不可以写mingzi）
 3. 当发现使用了 props 的时候，发现报错（已声明“props”，但从未读取其值。ts(6133)）的时候，确保 props 里面的值仅用在 template 中，语法糖里面并未使用该props的时候，可以使用 // @ts-ignore 来避免 ts 的语法检查
+
+## 项目完成进度
+
+2024-1-24
+1. 当editor里面子节点全部删除的时候，自动增加'<p><br/><p>'
+2. 当按下 enter 的时候，自动增加 p 标签，若是h1等，则不会增加p标签
+3. 当结构改变的时候，增加MutationObserver，自动指定 lastNode
+遗留 bug
+1. 当delete到尽头的时候，lastNode节点变成最外层的盒子
+
+2024-1-25
+1. 解决遗留的bug问题
+2. 
