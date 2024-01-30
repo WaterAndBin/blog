@@ -2,6 +2,7 @@
   <div class="box-border h-screen w-screen overflow-y-scroll overflow-x-hidden">
     <div
       class="m-[0_auto] mt-10 box-border h-auto max-w-200 border-1 border-gray-300/50 rounded-lg border-solid shadow-lg"
+      ref="editorBody"
     >
       <!-- 各种功能 -->
       <div
@@ -15,7 +16,11 @@
               class="relative w-full"
             >
               <div class="flex items-center justify-around">
-                <button class="box-border button-default" @click="clickNav(items, index)">
+                <button
+                  class="box-border button-default"
+                  :class="checkButton(items.actions)"
+                  @click="clickNav(items, index)"
+                >
                   <i class="block">
                     <svg-icon :name="items.name" class="h-5 w-5"></svg-icon>
                   </i>
@@ -42,13 +47,8 @@
         class="box-border min-h-100 w-full cursor-text overflow-hidden p-3 outline-0"
         @mouseup="getMouseSelection"
         @keydown.enter="insertP"
-      >
-        <p>
-          123
-          <span class="weight">456</span>
-          789
-        </p>
-      </div>
+        v-html="content"
+      ></div>
     </div>
   </div>
 </template>
@@ -58,22 +58,40 @@
 import Title from './Title.vue';
 import type { EditorButton } from '~/utils/editorDefaultButton';
 
+const content =
+  '<p>123 <strong>4<s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
+// const content = '<p>123 4<s>6</s>5 ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
+
 /* 仓库 */
 const editorButton = useEditorButton();
 
 /* dom元素 */
 const editor = ref<HTMLElement | null>(null);
 const editorNav = ref<HTMLElement | null>(null);
+const editorBody = ref<HTMLElement | null>(null);
 
 /* 记录点击的最后一行 */
 const lastNode = ref<HTMLElement>();
 /* 哪些对象不能存在 */
-const selectActions = ['title', 'hold', 'color', 'delete'];
+const selectActions = ['title', 'hold', 'color', 'delete', 'bias', 'underline'];
+
+/* 默认按钮 */
+const buttonState = {
+  isP: false,
+  hold: false, // 加粗
+  bias: false, // 斜线
+  delete: false, // 删除线
+  underline: false // 下划线
+};
+
+const tagNameAction: any = {
+  hold: 'strong',
+  bias: 'i',
+  underline: 'u',
+  delete: 's'
+};
 /* 活跃的状态 */
-let activeActions = reactive({
-  isP: true,
-  hold: false
-});
+let activeActions = reactive({ ...buttonState });
 
 const handleButtonNav = (actions: string): void => {
   if (editor.value) {
@@ -117,6 +135,10 @@ const getMouseSelection = (e?: Event): void => {
     const selection = window.getSelection();
     // 获取当前文档中被选中的文本所对应的第一个选区范围对象
     if (selection && selection.rangeCount > 0 && editor?.value?.contains(e?.target as Node)) {
+      /* 重置数据 */
+      // resetActiveActions();
+      /* 检查活动的区域 */
+      checkActiveActions(selection);
       const range = selection?.getRangeAt(0);
       if (range) {
         /* 判断他们的上级是不是editor */
@@ -136,16 +158,6 @@ const getMouseSelection = (e?: Event): void => {
     }
   }
   console.log('节点', lastNode.value);
-  /* 不能用下面的方法，会出现问题，节点锁定到大的div盒子 */
-  // if (editor.value) {
-  //   if (e) {
-  //     lastNode.value = e.target as HTMLElement;
-  //   } else {
-  //     console.log('获取了editor的第一个子元素');
-  //     lastNode.value = editor.value.childNodes[0] as HTMLElement;
-  //   }
-  // }
-  // console.log(lastNode.value);
 };
 
 /**
@@ -163,12 +175,15 @@ const clickNav = (data: EditorButton, index: number): void => {
 };
 
 /**
- * 当点击其他地方的时候组件隐藏
+ * 当点击其他地方的时候组件隐藏,头部
  * @param e Event
  */
 const handleOutsideClick = (e: Event): void => {
   if (!editorNav?.value?.contains(e.target as Node)) {
     editorButton.resetButton();
+  }
+  if (!editorBody?.value?.contains(e.target as Node)) {
+    resetActiveActions();
   }
 };
 
@@ -179,41 +194,134 @@ const handleOutsideClick = (e: Event): void => {
 const otherChange = (actions: string): void => {
   // 获取选择区域的对象
   const selection = window.getSelection();
-  if (selection && selection.rangeCount > 0) {
-    checkActiveActions(selection);
-    const { hold } = activeActions;
+  if (selection && selection.rangeCount > 0 && lastNode.value && selection.focusNode) {
+    // checkActiveActions(selection);
+    console.log(activeActions);
+    /* 选区 */
     const range = selection?.getRangeAt(0);
-    if (!hold) {
-      const selectedText = selection.toString();
-      range.deleteContents(); // 删除选中的内容
-      const span = document.createElement('span'); // 创建一个新的span元素
-      span.classList.add('weight');
-      span.textContent = selectedText; // 设置span的内容为选中的文本
-      range.insertNode(span); // 将span插入到选中的位置
-    } else {
-      let parentNode;
-      if (lastNode.value?.parentNode !== editor.value) {
-        parentNode = lastNode.value;
+    console.log(range);
+    let parentNodeLength; /* 父亲长度 */
+    let commonAncestorContainer; // 父节点
+    if (range.commonAncestorContainer.parentNode) {
+      /* 本套系统当中最多两层，因此的话向上或者上上面找父亲节点即可 */
+      if (range.commonAncestorContainer.parentNode.parentNode !== editor.value) {
+        commonAncestorContainer = range.commonAncestorContainer.parentNode.parentNode;
+      } else {
+        commonAncestorContainer = range.commonAncestorContainer.parentNode;
       }
-      console.log(parentNode);
-
+    }
+    if (selection.focusNode.parentNode) {
+      parentNodeLength = selection.focusNode.parentNode.textContent?.length;
+    }
+    /* 文字 */
+    const selectedText = selection.toString();
+    /* 判断里面是否都是false */
+    if (Object.values(activeActions).every((val) => !val)) {
+      insertDocument(actions);
+    } else {
+      /* 以下是难点 */
       const startOffset = range.startOffset;
       const endOffset = range.endOffset;
-      console.log(range.toString());
 
-      if (startOffset < endOffset) {
-        const selectedText = selection.toString();
+      if (startOffset === 0 && startOffset < endOffset && endOffset !== parentNodeLength) {
+        /* 当从第一位开始选择的时候,并且不到尾部 */
+        console.log('第一位开始');
+        // range.deleteContents(); // 删除选中的内容
+        const extractedContents = range.extractContents();
+
+        const span = document.createElement('span'); // 创建一个新的span元素
+        span.id = 'change';
+        // span.appendChild(extractedContents);
+        commonAncestorContainer?.insertBefore(span, lastNode.value);
+        let insertIndex = -1; /* 记录第几位的数字 */
+        commonAncestorContainer?.childNodes.forEach((items: any, index) => {
+          if (items.id === 'change') {
+            insertIndex = index - 1;
+          }
+        });
+        if (commonAncestorContainer?.childNodes?.[insertIndex]) {
+          commonAncestorContainer.childNodes[insertIndex].appendChild(extractedContents);
+          span.remove();
+        }
+      } else if (startOffset !== 0 && endOffset === parentNodeLength && startOffset < endOffset) {
+        /* 当是最后一位开始 */
+        console.log('最后一位开始');
         range.deleteContents(); // 删除选中的内容
         const span = document.createElement('span'); // 创建一个新的span元素
         span.id = 'change';
         span.textContent = selectedText; // 设置span的内容为选中的文本
-        range.insertNode(span); // 将span插入到选中的位置
+        commonAncestorContainer?.insertBefore(span, lastNode.value.nextSibling);
+        let insertIndex = -1; /* 记录第几位的数字 */
+        commonAncestorContainer?.childNodes.forEach((items: any, index) => {
+          if (items.id === 'change') {
+            insertIndex = index + 1;
+          }
+        });
+        if (commonAncestorContainer?.childNodes?.[insertIndex]) {
+          console.log(commonAncestorContainer.childNodes);
+          commonAncestorContainer.childNodes[insertIndex].textContent =
+            span.textContent + commonAncestorContainer.childNodes[insertIndex].textContent;
+          span.remove();
+        }
+      } else if (startOffset === 0 && endOffset === parentNodeLength) {
+        console.log('选了全部');
+        /* 当只选择了全部 */
+        range.deleteContents(); // 删除选中的内容
+        const span = document.createElement('span'); // 创建一个新的span元素
+        span.id = 'change';
+        span.textContent = selectedText; // 设置span的内容为选中的文本
+        commonAncestorContainer?.insertBefore(span, lastNode.value.nextSibling);
+        let insertIndex = -1; /* 记录第几位的数字 */
+        commonAncestorContainer?.childNodes.forEach((items: any, index) => {
+          if (items.id === 'change') {
+            insertIndex = index + 1;
+          }
+        });
+        if (commonAncestorContainer?.childNodes?.[insertIndex]) {
+          console.log(commonAncestorContainer.childNodes);
+          commonAncestorContainer.childNodes[insertIndex].textContent =
+            span.textContent + commonAncestorContainer.childNodes[insertIndex].textContent;
+          span.remove();
+        }
+        if (range.commonAncestorContainer.parentNode) {
+          const parentNode = range.commonAncestorContainer.parentNode as HTMLElement; // 确保它是HTMLElement类型
+          parentNode.remove();
+        }
+      } else if (startOffset < endOffset) {
+        /* 当只选择了中间 */
+        console.log('选择了中间');
+        console.log(range.commonAncestorContainer.parentNode);
+        // const beforeSpan = document.createElement('span');
       }
 
       console.log(startOffset, endOffset);
     }
   }
 };
+
+const insertDocument = (actions: string): void => {
+  const selection = window.getSelection();
+  if (selection && selection.rangeCount > 0 && lastNode.value && selection.focusNode) {
+    const range = selection.getRangeAt(0);
+    const extractedContents = range.extractContents();
+
+    range.deleteContents(); // 删除选中的内容
+    const span = document.createElement(tagNameAction[actions]); // 创建一个新的span元素
+    span.appendChild(extractedContents);
+    range.insertNode(span); // 将span插入到选中的位置
+  }
+};
+
+// function getNodesBetween(startNode: Node | ChildNode | null, endNode: Node | ChildNode) {
+//   const nodes = [];
+//   let currentNode = startNode;
+//   while (currentNode && currentNode !== endNode) {
+//     nodes.push(currentNode);
+//     currentNode = currentNode.nextSibling;
+//   }
+//   nodes.push(endNode);
+//   return nodes;
+// }
 
 /**
  * 插入p标签
@@ -256,31 +364,63 @@ const deleteDocument = (): void => {
  * 检查活跃的状态
  */
 const checkActiveActions = (e: Selection): void => {
-  activeActions = {
-    isP: false,
-    hold: false
-  };
+  resetActiveActions();
   const selection = window.getSelection();
   if (selection && selection.rangeCount > 0) {
     const range = selection?.getRangeAt(0);
-    const commonAncestorContainer = range.commonAncestorContainer;
-    const { childNodes } = commonAncestorContainer;
+    const startContainer = range.startContainer;
+    // const { childNodes } = startContainer;
     /* 判断孩子节点 */
-    if (childNodes.length !== 0) {
-      for (let i = 0; i < childNodes.length; i++) {
-        const node = childNodes[i] as HTMLElement;
-        if (node.className === 'weight') {
-          activeActions.hold = true;
-        }
-      }
-    } else {
-      /* 没有孩子节点就判断父亲 */
-      const node = commonAncestorContainer.parentNode as HTMLElement;
-      if (node.className === 'weight') {
-        activeActions.hold = true;
-      }
+    // if (childNodes.length !== 0) {
+    //   for (let i = 0; i < childNodes.length; i++) {
+    //     childNodes[i] instanceof HTMLElement
+    //       ? checkClassName(childNodes[i])
+    //       : checkClassName(childNodes[i].parentNode);
+    //   }
+    // } else {
+    // let parentNode = startContainer.parentNode;
+    checkClassName(startContainer.parentNode);
+    // }
+  }
+};
+
+/**
+ * 更新样式
+ * @param node 节点
+ */
+const checkClassName = (node: ParentNode | ChildNode | null): void => {
+  if (node) {
+    if (node.nodeName == 'STRONG') {
+      activeActions.hold = true;
+    }
+    if (node.nodeName == 'S') {
+      activeActions.delete = true;
+    }
+    if (node.nodeName == 'U') {
+      activeActions.underline = true;
+    }
+    if (node.nodeName == 'I') {
+      activeActions.bias = true;
+    }
+    if (node.parentNode?.parentNode !== editor.value) {
+      checkClassName(node.parentNode);
     }
   }
+};
+
+/**
+ * 重置活跃数据
+ */
+const resetActiveActions = (): void => {
+  activeActions = Object.assign(activeActions, { ...buttonState });
+};
+
+const checkButton = (items: string): string => {
+  const actice = (activeActions as any)[items];
+  if (actice) {
+    return 'activeButtonBg';
+  }
+  return '';
 };
 
 onMounted(() => {
@@ -334,7 +474,7 @@ onBeforeUnmount(() => {
   color: red;
 }
 
-.weight {
-  font-weight: 600;
+.activeButtonBg {
+  background-color: rgba(128, 128, 128, 0.192);
 }
 </style>

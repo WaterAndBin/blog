@@ -50,7 +50,7 @@ export const editorButton: EditorButton[] = [
   {
     name: 'editor-italic.svg',
     title: '斜线',
-    actions: 'delete'
+    actions: 'bias'
   },
   {
     name: 'editor-strikethrough.svg',
@@ -60,23 +60,23 @@ export const editorButton: EditorButton[] = [
   {
     name: 'editor-underline.svg',
     title: '下划线',
-    actions: 'delete'
+    actions: 'underline'
   },
   {
     name: 'editor-orderedLists.svg',
     title: '有序列表',
-    actions: 'delete'
+    actions: ''
   },
   {
     name: 'editor-unorderedListings.svg',
     title: '无序列表',
-    actions: 'delete'
+    actions: ''
   },
   {
     name: 'editor-align.svg',
     title: '对齐',
     hide: false,
-    actions: 'delete',
+    actions: '',
     children: [
       {
         name: 'editor-leftAlign.svg',
@@ -95,17 +95,17 @@ export const editorButton: EditorButton[] = [
   {
     name: 'editor-horizon.svg',
     title: '水平线',
-    actions: 'delete'
+    actions: ''
   },
   {
     name: 'editor.codeBlocks.svg',
     title: '代码块',
-    actions: 'delete'
+    actions: ''
   },
   {
     name: 'editor-image.svg',
     title: '图像',
-    actions: 'delete'
+    actions: ''
   }
 ];
 
