@@ -1,8 +1,8 @@
 <template>
-  <div class="box-border h-screen w-screen overflow-y-scroll overflow-x-hidden">
+  <div class="box-border h-screen w-screen overflow-x-hidden overflow-y-scroll">
     <div
-      class="m-[0_auto] mt-10 box-border h-auto max-w-200 border-1 border-gray-300/50 rounded-lg border-solid shadow-lg"
       ref="editorBody"
+      class="m-[0_auto] mt-10 box-border h-auto max-w-200 border-1 border-gray-300/50 rounded-lg border-solid shadow-lg"
     >
       <!-- 各种功能 -->
       <div
@@ -57,9 +57,10 @@
 /* 标题的子组件 */
 import Title from './Title.vue';
 import type { EditorButton } from '~/utils/editorDefaultButton';
+import findSameDocument from '~/utils/findSameDocument';
 
 const content =
-  '<p>123 <strong>4<s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
+  '<p>123 4<strong><s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
 // const content = '<p>123 4<s>6</s>5 ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
 
 /* 仓库 */
@@ -84,14 +85,8 @@ const buttonState = {
   underline: false // 下划线
 };
 
-const tagNameAction: any = {
-  hold: 'strong',
-  bias: 'i',
-  underline: 'u',
-  delete: 's'
-};
 /* 活跃的状态 */
-let activeActions = reactive({ ...buttonState });
+let activeActions: any = reactive({ ...buttonState });
 
 const handleButtonNav = (actions: string): void => {
   if (editor.value) {
@@ -201,15 +196,23 @@ const otherChange = (actions: string): void => {
     const range = selection?.getRangeAt(0);
     console.log(range);
     let parentNodeLength; /* 父亲长度 */
-    let commonAncestorContainer; // 父节点
+    let commonAncestorContainer: ParentNode | Node | null = null; // 父节点
+
+    /* 寻找父节点 */
     if (range.commonAncestorContainer.parentNode) {
       /* 本套系统当中最多两层，因此的话向上或者上上面找父亲节点即可 */
-      if (range.commonAncestorContainer.parentNode.parentNode !== editor.value) {
+      if (
+        range.commonAncestorContainer.parentNode.parentNode !== editor.value &&
+        editor?.value?.contains(range.commonAncestorContainer.parentNode.parentNode)
+      ) {
         commonAncestorContainer = range.commonAncestorContainer.parentNode.parentNode;
-      } else {
+      } else if (editor?.value?.contains(range.commonAncestorContainer.parentNode.parentNode)) {
         commonAncestorContainer = range.commonAncestorContainer.parentNode;
+      } else {
+        commonAncestorContainer = range.commonAncestorContainer;
       }
     }
+
     if (selection.focusNode.parentNode) {
       parentNodeLength = selection.focusNode.parentNode.textContent?.length;
     }
@@ -226,43 +229,11 @@ const otherChange = (actions: string): void => {
       if (startOffset === 0 && startOffset < endOffset && endOffset !== parentNodeLength) {
         /* 当从第一位开始选择的时候,并且不到尾部 */
         console.log('第一位开始');
-        // range.deleteContents(); // 删除选中的内容
-        const extractedContents = range.extractContents();
-
-        const span = document.createElement('span'); // 创建一个新的span元素
-        span.id = 'change';
-        // span.appendChild(extractedContents);
-        commonAncestorContainer?.insertBefore(span, lastNode.value);
-        let insertIndex = -1; /* 记录第几位的数字 */
-        commonAncestorContainer?.childNodes.forEach((items: any, index) => {
-          if (items.id === 'change') {
-            insertIndex = index - 1;
-          }
-        });
-        if (commonAncestorContainer?.childNodes?.[insertIndex]) {
-          commonAncestorContainer.childNodes[insertIndex].appendChild(extractedContents);
-          span.remove();
-        }
+        startChange(commonAncestorContainer);
       } else if (startOffset !== 0 && endOffset === parentNodeLength && startOffset < endOffset) {
         /* 当是最后一位开始 */
         console.log('最后一位开始');
-        range.deleteContents(); // 删除选中的内容
-        const span = document.createElement('span'); // 创建一个新的span元素
-        span.id = 'change';
-        span.textContent = selectedText; // 设置span的内容为选中的文本
-        commonAncestorContainer?.insertBefore(span, lastNode.value.nextSibling);
-        let insertIndex = -1; /* 记录第几位的数字 */
-        commonAncestorContainer?.childNodes.forEach((items: any, index) => {
-          if (items.id === 'change') {
-            insertIndex = index + 1;
-          }
-        });
-        if (commonAncestorContainer?.childNodes?.[insertIndex]) {
-          console.log(commonAncestorContainer.childNodes);
-          commonAncestorContainer.childNodes[insertIndex].textContent =
-            span.textContent + commonAncestorContainer.childNodes[insertIndex].textContent;
-          span.remove();
-        }
+        endChange(commonAncestorContainer);
       } else if (startOffset === 0 && endOffset === parentNodeLength) {
         console.log('选了全部');
         /* 当只选择了全部 */
@@ -299,20 +270,21 @@ const otherChange = (actions: string): void => {
   }
 };
 
+/**
+ * 插入新的元素
+ * @param actions 元素
+ */
 const insertDocument = (actions: string): void => {
   const selection = window.getSelection();
   if (selection && selection.rangeCount > 0 && lastNode.value && selection.focusNode) {
     const range = selection.getRangeAt(0);
     const extractedContents = range.extractContents();
-
-    range.deleteContents(); // 删除选中的内容
-    const span = document.createElement(tagNameAction[actions]); // 创建一个新的span元素
-    span.appendChild(extractedContents);
-    range.insertNode(span); // 将span插入到选中的位置
+    const newExtractedContents = findSameDocument(actions, extractedContents);
+    console.log(newExtractedContents);
   }
 };
 
-// function getNodesBetween(startNode: Node | ChildNode | null, endNode: Node | ChildNode) {
+// const getNodesBetween = (startNode: Node | ChildNode | null, endNode: Node | ChildNode) => {
 //   const nodes = [];
 //   let currentNode = startNode;
 //   while (currentNode && currentNode !== endNode) {
@@ -321,7 +293,7 @@ const insertDocument = (actions: string): void => {
 //   }
 //   nodes.push(endNode);
 //   return nodes;
-// }
+// };
 
 /**
  * 插入p标签
@@ -416,11 +388,49 @@ const resetActiveActions = (): void => {
 };
 
 const checkButton = (items: string): string => {
-  const actice = (activeActions as any)[items];
+  const actice = String(activeActions[items]);
   if (actice) {
     return 'activeButtonBg';
   }
   return '';
+};
+
+/**
+ *
+ * @param isAdd 判断是插入还说删除
+ * @param parentNode
+ */
+const startChange = (parentNode: Node | ParentNode | null): void => {
+  const selection = window.getSelection();
+  if (selection && selection.rangeCount > 0 && lastNode.value && selection.focusNode) {
+    const range = selection.getRangeAt(0);
+    /* 先判断是不是父亲 */
+    if (parentNode) {
+      const startNode = range.startContainer.parentNode;
+      const extractedContents = range.extractContents();
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(extractedContents);
+      parentNode.insertBefore(fragment, startNode);
+      startNode?.parentNode?.removeChild(startNode);
+    }
+  }
+};
+
+const endChange = (parentNode: Node | ParentNode | null): void => {
+  const selection = window.getSelection();
+  if (selection && selection.rangeCount > 0 && lastNode.value && selection.focusNode) {
+    const range = selection.getRangeAt(0);
+    /* 先判断是不是父亲 */
+    if (parentNode) {
+      const startNode = range.startContainer.parentNode;
+      console.log(startNode);
+      const extractedContents = range.extractContents();
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(extractedContents);
+      parentNode.insertBefore(fragment, startNode);
+      startNode?.parentNode?.removeChild(startNode);
+    }
+  }
 };
 
 onMounted(() => {

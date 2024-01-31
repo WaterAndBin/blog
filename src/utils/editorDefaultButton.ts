@@ -125,3 +125,17 @@ export interface EditorButtonChild {
   hide?: boolean;
   children?: EditorButtonChild[];
 }
+
+export const tagNameAction: TagNameAction = {
+  hold: 'strong',
+  bias: 'i',
+  underline: 'u',
+  delete: 's'
+};
+
+export interface TagNameAction {
+  hold: string;
+  bias: string;
+  underline: string;
+  delete: string;
+}
