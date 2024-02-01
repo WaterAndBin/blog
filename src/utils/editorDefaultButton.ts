@@ -65,54 +65,54 @@ export const editorButton: EditorButton[] = [
   {
     name: 'editor-orderedLists.svg',
     title: '有序列表',
-    actions: ''
+    actions: 'order'
   },
   {
     name: 'editor-unorderedListings.svg',
     title: '无序列表',
-    actions: ''
+    actions: 'disorder'
   },
-  {
-    name: 'editor-align.svg',
-    title: '对齐',
-    hide: false,
-    actions: '',
-    children: [
-      {
-        name: 'editor-leftAlign.svg',
-        title: '左对齐',
-        actionsTitle: '对齐',
-        actions: 'h5'
-      },
-      {
-        name: 'editor-rightAlign.svg',
-        title: '右对齐',
-        actionsTitle: '对齐',
-        actions: 'h5'
-      }
-    ]
-  },
+  // {
+  //   name: 'editor-align.svg',
+  //   title: '对齐',
+  //   hide: false,
+  //   actions: '',
+  //   children: [
+  //     {
+  //       name: 'editor-leftAlign.svg',
+  //       title: '左对齐',
+  //       actionsTitle: '对齐',
+  //       actions: 'h5'
+  //     },
+  //     {
+  //       name: 'editor-rightAlign.svg',
+  //       title: '右对齐',
+  //       actionsTitle: '对齐',
+  //       actions: 'h5'
+  //     }
+  //   ]
+  // },
   {
     name: 'editor-horizon.svg',
     title: '水平线',
-    actions: ''
+    actions: 'line'
   },
   {
     name: 'editor.codeBlocks.svg',
     title: '代码块',
-    actions: ''
+    actions: 'code'
   },
   {
     name: 'editor-image.svg',
     title: '图像',
-    actions: ''
+    actions: 'image'
   }
 ];
 
 export interface EditorButton {
   name: string;
   title: string;
-  actions: string;
+  actions: TagNameSelect;
   hide?: boolean;
   children?: EditorButtonChild[];
 }
@@ -139,3 +139,16 @@ export interface TagNameAction {
   underline: string;
   delete: string;
 }
+
+export type TagNameSelect =
+  | 'hold'
+  | 'bias'
+  | 'underline'
+  | 'delete'
+  | 'color'
+  | 'order'
+  | 'disorder'
+  | 'line'
+  | 'code'
+  | 'image'
+  | 'title';

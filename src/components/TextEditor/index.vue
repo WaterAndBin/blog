@@ -57,11 +57,12 @@
 /* 标题的子组件 */
 import Title from './Title.vue';
 import type { EditorButton } from '~/utils/editorDefaultButton';
-import findSameDocument from '~/utils/findSameDocument';
+import { tagNameAction } from '~/utils/editorDefaultButton';
+import { findSameDocument } from '~/utils/findSameDocument';
 
-const content =
-  '<p>123 4<strong><s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
-// const content = '<p>123 4<s>6</s>5 ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
+// const content =
+// '<p>123 <strong>4<s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
+const content = '<p>123 4<s>6</s>5 ddd <strong>asd789</strong>';
 
 /* 仓库 */
 const editorButton = useEditorButton();
@@ -194,7 +195,6 @@ const otherChange = (actions: string): void => {
     console.log(activeActions);
     /* 选区 */
     const range = selection?.getRangeAt(0);
-    console.log(range);
     let parentNodeLength; /* 父亲长度 */
     let commonAncestorContainer: ParentNode | Node | null = null; // 父节点
 
@@ -212,60 +212,37 @@ const otherChange = (actions: string): void => {
         commonAncestorContainer = range.commonAncestorContainer;
       }
     }
-
     if (selection.focusNode.parentNode) {
       parentNodeLength = selection.focusNode.parentNode.textContent?.length;
     }
-    /* 文字 */
-    const selectedText = selection.toString();
+
     /* 判断里面是否都是false */
     if (Object.values(activeActions).every((val) => !val)) {
-      insertDocument(actions);
+      insertDocument(actions, commonAncestorContainer);
     } else {
       /* 以下是难点 */
       const startOffset = range.startOffset;
       const endOffset = range.endOffset;
 
+      /* 判断一下是需要添加还是取消添加 */
+      const isAdd = activeActions[actions];
+
       if (startOffset === 0 && startOffset < endOffset && endOffset !== parentNodeLength) {
         /* 当从第一位开始选择的时候,并且不到尾部 */
         console.log('第一位开始');
-        startChange(commonAncestorContainer);
+        commonChange(isAdd, actions, commonAncestorContainer, 'start');
       } else if (startOffset !== 0 && endOffset === parentNodeLength && startOffset < endOffset) {
         /* 当是最后一位开始 */
-        console.log('最后一位开始');
-        endChange(commonAncestorContainer);
+        console.log('从中间选择开始，到最后');
+        commonChange(isAdd, actions, commonAncestorContainer, 'end');
       } else if (startOffset === 0 && endOffset === parentNodeLength) {
         console.log('选了全部');
-        /* 当只选择了全部 */
-        range.deleteContents(); // 删除选中的内容
-        const span = document.createElement('span'); // 创建一个新的span元素
-        span.id = 'change';
-        span.textContent = selectedText; // 设置span的内容为选中的文本
-        commonAncestorContainer?.insertBefore(span, lastNode.value.nextSibling);
-        let insertIndex = -1; /* 记录第几位的数字 */
-        commonAncestorContainer?.childNodes.forEach((items: any, index) => {
-          if (items.id === 'change') {
-            insertIndex = index + 1;
-          }
-        });
-        if (commonAncestorContainer?.childNodes?.[insertIndex]) {
-          console.log(commonAncestorContainer.childNodes);
-          commonAncestorContainer.childNodes[insertIndex].textContent =
-            span.textContent + commonAncestorContainer.childNodes[insertIndex].textContent;
-          span.remove();
-        }
-        if (range.commonAncestorContainer.parentNode) {
-          const parentNode = range.commonAncestorContainer.parentNode as HTMLElement; // 确保它是HTMLElement类型
-          parentNode.remove();
-        }
+        allChange(isAdd, actions, commonAncestorContainer);
       } else if (startOffset < endOffset) {
         /* 当只选择了中间 */
         console.log('选择了中间');
         console.log(range.commonAncestorContainer.parentNode);
-        // const beforeSpan = document.createElement('span');
       }
-
-      console.log(startOffset, endOffset);
     }
   }
 };
@@ -274,13 +251,29 @@ const otherChange = (actions: string): void => {
  * 插入新的元素
  * @param actions 元素
  */
-const insertDocument = (actions: string): void => {
+const insertDocument = (actions: string, parentNode: ParentNode | Node | null): void => {
+  console.log('插入新的元素');
   const selection = window.getSelection();
-  if (selection && selection.rangeCount > 0 && lastNode.value && selection.focusNode) {
+  if (selection && selection.rangeCount > 0 && parentNode) {
     const range = selection.getRangeAt(0);
+    /* 去找相同的元素再决定用什么方法来解决 */
     const extractedContents = range.extractContents();
+    /* 获取新的处理的节点 */
     const newExtractedContents = findSameDocument(actions, extractedContents);
-    console.log(newExtractedContents);
+    /* 记录空节点，查看哪个节点里面的内容是空的 */
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(newExtractedContents);
+    const actionsNode = document.createElement((tagNameAction as any)[actions]);
+    range.surroundContents(actionsNode);
+    actionsNode.appendChild(fragment);
+    const nullNode = Array.from(parentNode.childNodes).find((items) => items.textContent == '');
+    if (nullNode) {
+      /* 上节点 */
+      parentNode.insertBefore(actionsNode, nullNode);
+      nullNode.remove();
+    } else {
+      console.log('没有空节点');
+    }
   }
 };
 
@@ -387,8 +380,12 @@ const resetActiveActions = (): void => {
   activeActions = Object.assign(activeActions, { ...buttonState });
 };
 
+/**
+ * 检查按钮是否是激活的
+ * @param items
+ */
 const checkButton = (items: string): string => {
-  const actice = String(activeActions[items]);
+  const actice = activeActions[items] as string;
   if (actice) {
     return 'activeButtonBg';
   }
@@ -396,39 +393,113 @@ const checkButton = (items: string): string => {
 };
 
 /**
- *
- * @param isAdd 判断是插入还说删除
- * @param parentNode
+ * 插入样式
+ * @param isAdd 判断是插入还是删除
+ * @param actions 他要插入的对象
+ * @param parentNode 父亲
  */
-const startChange = (parentNode: Node | ParentNode | null): void => {
+const commonChange = (
+  isAdd: boolean,
+  actions: string,
+  parentNode: Node | ParentNode | null,
+  position: string
+): void => {
   const selection = window.getSelection();
   if (selection && selection.rangeCount > 0 && lastNode.value && selection.focusNode) {
-    const range = selection.getRangeAt(0);
     /* 先判断是不是父亲 */
     if (parentNode) {
-      const startNode = range.startContainer.parentNode;
+      const range = selection.getRangeAt(0);
+      /* 选区模块 */
       const extractedContents = range.extractContents();
-      const fragment = document.createDocumentFragment();
-      fragment.appendChild(extractedContents);
-      parentNode.insertBefore(fragment, startNode);
-      startNode?.parentNode?.removeChild(startNode);
+      /* 获取新的处理的节点 */
+      const newExtractedContents = findSameDocument(actions, extractedContents);
+      /* 记录空节点，查看哪个节点里面的内容是空的 */
+      const nullNode = Array.from(parentNode.childNodes).find((items) => items.textContent == '');
+      if (nullNode) {
+        /* 如果不是选择全选 */
+        if (!isAdd) {
+          /* 上节点 */
+          const actionsNode = document.createElement((tagNameAction as any)[actions]);
+          actionsNode.appendChild(newExtractedContents);
+          nullNode.appendChild(actionsNode);
+        } else {
+          const fragment = document.createDocumentFragment();
+          fragment.appendChild(newExtractedContents);
+          parentNode.insertBefore(fragment, nullNode);
+          nullNode.remove();
+        }
+      } else {
+        console.log('没有空节点');
+        const fragment = document.createDocumentFragment();
+        fragment.appendChild(newExtractedContents);
+        if (!isAdd) {
+          const actionsNode = document.createElement((tagNameAction as any)[actions]);
+          actionsNode.appendChild(fragment);
+        } else {
+          if (position == 'start') {
+            try {
+              parentNode.insertBefore(fragment, range.startContainer.parentNode);
+            } catch (e) {
+              parentNode.insertBefore(fragment, range.startContainer);
+            }
+          } else if (position == 'end') {
+            if (range.startContainer.parentNode) {
+              parentNode.insertBefore(fragment, range.startContainer.parentNode?.nextSibling);
+            }
+          }
+        }
+      }
+
+      const deletNode = Array.from(parentNode.childNodes).find((items) => items.textContent == '');
+      deletNode?.remove();
     }
   }
 };
 
-const endChange = (parentNode: Node | ParentNode | null): void => {
+/**
+ * 全部的时候
+ * @param isAdd
+ * @param actions
+ * @param parentNode
+ */
+const allChange = (isAdd: boolean, actions: string, parentNode: Node | ParentNode | null): void => {
   const selection = window.getSelection();
   if (selection && selection.rangeCount > 0 && lastNode.value && selection.focusNode) {
-    const range = selection.getRangeAt(0);
-    /* 先判断是不是父亲 */
-    if (parentNode) {
-      const startNode = range.startContainer.parentNode;
-      console.log(startNode);
+    const range = selection?.getRangeAt(0);
+    if (isAdd) {
+      findParentNode(actions, range.commonAncestorContainer);
+    } else {
+      const commonAncestorContainer = range.commonAncestorContainer;
       const extractedContents = range.extractContents();
       const fragment = document.createDocumentFragment();
       fragment.appendChild(extractedContents);
-      parentNode.insertBefore(fragment, startNode);
-      startNode?.parentNode?.removeChild(startNode);
+      const actionsNode = document.createElement((tagNameAction as any)[actions]);
+      actionsNode.appendChild(fragment);
+      commonAncestorContainer?.appendChild(actionsNode);
+    }
+  }
+};
+
+/**
+ * 找到父级的parent
+ * @param actions
+ * @param node 节点
+ */
+const findParentNode = (actions: string, node: ParentNode | Node | null): void => {
+  if (node == editor.value) return;
+  if (node) {
+    console.log(node);
+    if (node.nodeName !== tagNameAction[actions as keyof TagNameAction].toUpperCase()) {
+      findParentNode(actions, node.parentNode);
+    } else {
+      /* 找到了该属性 */
+      console.log('找到了该属性');
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const newContents = range.extractContents();
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(newContents);
+      node.parentNode?.replaceChild(fragment, node);
     }
   }
 };
