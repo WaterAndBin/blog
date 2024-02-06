@@ -10,16 +10,15 @@ import type { TagNameAction } from './editorDefaultButton';
 
 export const findSameDocument = (
   actions: string,
+  parentNode: Node | ParentNode | null,
   extractedContents: DocumentFragment
 ): DocumentFragment => {
   extractedContents.childNodes.forEach((node) => {
-    console.log(node);
     if (
       node.nodeType === Node.ELEMENT_NODE &&
       node.nodeName === tagNameAction[actions as keyof TagNameAction].toUpperCase()
     ) {
       if (node.firstChild && node.lastChild?.textContent) {
-        console.log('找到重复的元素了');
         // const newRange = document.createRange();
         // newRange.setStart(node.firstChild, 0);
         // newRange.setEnd(node.lastChild, node.lastChild.textContent.length);
@@ -37,11 +36,7 @@ export const findSameDocument = (
       }
     }
   });
-  console.log('孩子节点');
-  console.log(extractedContents.childNodes);
-  extractedContents.childNodes.forEach((items) => {
-    console.log(items);
-  });
+  // console.log(extractedContents.childNodes);
   return extractedContents;
 };
 

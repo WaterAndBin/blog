@@ -62,7 +62,8 @@ import { findSameDocument } from '~/utils/findSameDocument';
 
 // const content =
 // '<p>123 <strong>4<s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
-const content = '<p>123 4<s>6</s>5 ddd <strong>asd789</strong>';
+const content =
+  '<p>123 <strong>4<s>6</s>5</strong> <strong>test</strong> ddd <strong><u>a<i>sd78</i>9</u></strong>';
 
 /* 仓库 */
 const editorButton = useEditorButton();
@@ -95,8 +96,6 @@ const handleButtonNav = (actions: string): void => {
     const target = editor.value;
 
     if (lastNode.value && target) {
-      console.log('进来了');
-
       /* 判断是不是整行处理的 */
       if (!selectActions.includes(actions)) {
         // 获取当前选中的文档
@@ -196,52 +195,51 @@ const otherChange = (actions: string): void => {
     /* 选区 */
     const range = selection?.getRangeAt(0);
     let parentNodeLength; /* 父亲长度 */
-    let commonAncestorContainer: ParentNode | Node | null = null; // 父节点
+    const commonAncestorContainer: ParentNode | Node | undefined = findParent(
+      range.commonAncestorContainer
+    );
 
-    /* 寻找父节点 */
-    if (range.commonAncestorContainer.parentNode) {
-      /* 本套系统当中最多两层，因此的话向上或者上上面找父亲节点即可 */
-      if (
-        range.commonAncestorContainer.parentNode.parentNode !== editor.value &&
-        editor?.value?.contains(range.commonAncestorContainer.parentNode.parentNode)
-      ) {
-        commonAncestorContainer = range.commonAncestorContainer.parentNode.parentNode;
-      } else if (editor?.value?.contains(range.commonAncestorContainer.parentNode.parentNode)) {
-        commonAncestorContainer = range.commonAncestorContainer.parentNode;
+    if (commonAncestorContainer) {
+      parentNodeLength = commonAncestorContainer.textContent?.length;
+
+      if (Object.values(activeActions).every((val) => !val)) {
+        /* 判断里面是否都是false */
+        insertDocument(actions, commonAncestorContainer);
       } else {
-        commonAncestorContainer = range.commonAncestorContainer;
-      }
-    }
-    if (selection.focusNode.parentNode) {
-      parentNodeLength = selection.focusNode.parentNode.textContent?.length;
-    }
+        /* 以下是难点 */
+        const startOffset = range.startOffset;
+        const endOffset = range.endOffset;
 
-    /* 判断里面是否都是false */
-    if (Object.values(activeActions).every((val) => !val)) {
-      insertDocument(actions, commonAncestorContainer);
-    } else {
-      /* 以下是难点 */
-      const startOffset = range.startOffset;
-      const endOffset = range.endOffset;
+        /* 判断一下是需要添加还是取消添加 */
+        const isAdd = activeActions[actions];
 
-      /* 判断一下是需要添加还是取消添加 */
-      const isAdd = activeActions[actions];
+        /* 全选字段 */
+        const isAll = isSelectAll(commonAncestorContainer, parentNodeLength);
 
-      if (startOffset === 0 && startOffset < endOffset && endOffset !== parentNodeLength) {
-        /* 当从第一位开始选择的时候,并且不到尾部 */
-        console.log('第一位开始');
-        commonChange(isAdd, actions, commonAncestorContainer, 'start');
-      } else if (startOffset !== 0 && endOffset === parentNodeLength && startOffset < endOffset) {
-        /* 当是最后一位开始 */
-        console.log('从中间选择开始，到最后');
-        commonChange(isAdd, actions, commonAncestorContainer, 'end');
-      } else if (startOffset === 0 && endOffset === parentNodeLength) {
-        console.log('选了全部');
-        allChange(isAdd, actions, commonAncestorContainer);
-      } else if (startOffset < endOffset) {
-        /* 当只选择了中间 */
-        console.log('选择了中间');
-        console.log(range.commonAncestorContainer.parentNode);
+        console.log(startOffset);
+        console.log(endOffset);
+
+        if (
+          startOffset === 0 &&
+          startOffset < endOffset &&
+          endOffset !== parentNodeLength &&
+          isAll
+        ) {
+          /* 当从第一位开始选择的时候,并且不到尾部 */
+          console.log('第一位开始');
+          commonChange(isAdd, actions, commonAncestorContainer, 'start');
+        } else if (startOffset !== 0 && endOffset === parentNodeLength && startOffset < endOffset) {
+          /* 当是最后一位开始 */
+          console.log('从中间选择开始，到最后');
+          commonChange(isAdd, actions, commonAncestorContainer, 'end');
+        } else if (startOffset === 0 && (endOffset === parentNodeLength || !isAll)) {
+          console.log('选了全部');
+          allChange(isAdd, actions, commonAncestorContainer);
+        } else if (startOffset < endOffset) {
+          /* 当只选择了中间 */
+          console.log('选择了中间');
+          middleChange(isAdd, actions, commonAncestorContainer);
+        }
       }
     }
   }
@@ -259,7 +257,7 @@ const insertDocument = (actions: string, parentNode: ParentNode | Node | null): 
     /* 去找相同的元素再决定用什么方法来解决 */
     const extractedContents = range.extractContents();
     /* 获取新的处理的节点 */
-    const newExtractedContents = findSameDocument(actions, extractedContents);
+    const newExtractedContents = findSameDocument(actions, parentNode, extractedContents);
     /* 记录空节点，查看哪个节点里面的内容是空的 */
     const fragment = document.createDocumentFragment();
     fragment.appendChild(newExtractedContents);
@@ -412,10 +410,14 @@ const commonChange = (
       /* 选区模块 */
       const extractedContents = range.extractContents();
       /* 获取新的处理的节点 */
-      const newExtractedContents = findSameDocument(actions, extractedContents);
+      const newExtractedContents = findSameDocument(actions, parentNode, extractedContents);
+
       /* 记录空节点，查看哪个节点里面的内容是空的 */
       const nullNode = Array.from(parentNode.childNodes).find((items) => items.textContent == '');
-      if (nullNode) {
+      if (
+        nullNode &&
+        parentNode.nodeName !== tagNameAction[actions as keyof TagNameAction].toUpperCase()
+      ) {
         /* 如果不是选择全选 */
         if (!isAdd) {
           /* 上节点 */
@@ -429,13 +431,17 @@ const commonChange = (
           nullNode.remove();
         }
       } else {
-        console.log('没有空节点');
         const fragment = document.createDocumentFragment();
         fragment.appendChild(newExtractedContents);
         if (!isAdd) {
+          console.log('isAdd');
           const actionsNode = document.createElement((tagNameAction as any)[actions]);
           actionsNode.appendChild(fragment);
+          if (position == 'end') {
+            range.startContainer.parentNode?.appendChild(actionsNode);
+          }
         } else {
+          console.log('非isAdd');
           if (position == 'start') {
             try {
               parentNode.insertBefore(fragment, range.startContainer.parentNode);
@@ -443,8 +449,20 @@ const commonChange = (
               parentNode.insertBefore(fragment, range.startContainer);
             }
           } else if (position == 'end') {
-            if (range.startContainer.parentNode) {
-              parentNode.insertBefore(fragment, range.startContainer.parentNode?.nextSibling);
+            if (range.startContainer.parentNode && range.endContainer.parentNode) {
+              try {
+                console.log();
+                parentNode.insertBefore(fragment, range.endContainer.parentNode?.nextSibling);
+              } catch (e) {
+                console.log('报错了');
+                console.log(fragment);
+                if (parentNode.parentNode) {
+                  parentNode.parentNode.insertBefore(
+                    fragment,
+                    range.endContainer.parentNode?.nextSibling
+                  );
+                }
+              }
             }
           }
         }
@@ -488,18 +506,82 @@ const allChange = (isAdd: boolean, actions: string, parentNode: Node | ParentNod
 const findParentNode = (actions: string, node: ParentNode | Node | null): void => {
   if (node == editor.value) return;
   if (node) {
-    console.log(node);
     if (node.nodeName !== tagNameAction[actions as keyof TagNameAction].toUpperCase()) {
       findParentNode(actions, node.parentNode);
     } else {
       /* 找到了该属性 */
-      console.log('找到了该属性');
       const range = document.createRange();
       range.selectNodeContents(node);
       const newContents = range.extractContents();
       const fragment = document.createDocumentFragment();
       fragment.appendChild(newContents);
       node.parentNode?.replaceChild(fragment, node);
+    }
+  }
+};
+
+/**
+ * 找到父节点
+ * @param node
+ */
+const findParent = (node: ParentNode | Node | null): Node | ParentNode | undefined => {
+  if (node) {
+    if (node.parentNode?.parentNode !== editor.value && node.parentNode !== editor.value) {
+      return findParent(node.parentNode);
+    } else {
+      console.log(node);
+      return node;
+    }
+  }
+};
+
+/**
+ * 处理中间
+ * @param isAdd
+ * @param actions
+ * @param parentNode
+ */
+const middleChange = (
+  isAdd: boolean,
+  actions: string,
+  parentNode: Node | ParentNode | null
+): void => {
+  const selection = window.getSelection();
+  if (
+    selection?.rangeCount > 0 &&
+    lastNode?.value &&
+    selection?.focusNode &&
+    parentNode?.parentNode
+  ) {
+    const range = selection.getRangeAt(0);
+    /* 选区模块 */
+    const extractedContents = range.extractContents();
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(extractedContents);
+    if (!isAdd) {
+      const actionsNode = document.createElement((tagNameAction as any)[actions]);
+      range.surroundContents(actionsNode);
+      actionsNode.appendChild(fragment);
+    } else {
+      console.log('去除');
+      const actionsNode = document.createElement('span');
+      range.surroundContents(actionsNode);
+      actionsNode.appendChild(fragment);
+      // 创建一个新的范围 -- 中间节点
+      if (actionsNode.nextSibling && range.commonAncestorContainer.parentNode) {
+        const newRange = document.createRange();
+        /* 先拿到下一个节点放外面 */
+        newRange.selectNodeContents(actionsNode.nextSibling);
+        const newExtractedContents = newRange.extractContents();
+        const fragment = document.createDocumentFragment();
+        fragment.appendChild(newExtractedContents);
+        const actionsParentNode = document.createElement(parentNode.nodeName);
+        actionsParentNode.appendChild(fragment);
+        parentNode.parentNode.insertBefore(
+          actionsParentNode,
+          range.commonAncestorContainer?.nextSibling
+        );
+      }
     }
   }
 };
