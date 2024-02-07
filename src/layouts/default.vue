@@ -1,10 +1,10 @@
-<script setup lang="ts">
-/* dom元素 */
-const fullWindow = ref<HTMLElement | null>(null);
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <div id="id" ref="fullWindow" class="h-screen w-screen">
-    <NuxtPage></NuxtPage>
+  <div class="border-default max-w-screen min-h-screen border-4">
+    <div>
+      <Header></Header>
+      <NuxtPage></NuxtPage>
+    </div>
   </div>
 </template>

@@ -44,7 +44,7 @@
         id="editor"
         ref="editor"
         contenteditable="true"
-        class="box-border min-h-100 w-full cursor-text overflow-hidden p-3 outline-0"
+        class="editor-box box-border min-h-100 w-full cursor-text overflow-hidden p-3 outline-0"
         @mouseup="getMouseSelection"
         @keydown.enter="insertP"
         v-html="content"
@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { render } from 'vue';
 /* 标题的子组件 */
 import Title from './Title.vue';
 import type { EditorButton } from '~/utils/editorDefaultButton';
@@ -63,7 +64,7 @@ import { findSameDocument } from '~/utils/findSameDocument';
 // const content =
 // '<p>123 <strong>4<s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
 const content =
-  '<p>123 <strong>4<s>6</s>5</strong> <strong>test</strong> ddd <strong><u>a<i>sd78</i>9</u></strong>';
+  '<p>123 <strong>4<s>6</s>5</strong> <strong>test</strong> ddd <strong><u>a<i>sd78</i>9</u></strong></p>';
 
 /* 仓库 */
 const editorButton = useEditorButton();
@@ -76,7 +77,17 @@ const editorBody = ref<HTMLElement | null>(null);
 /* 记录点击的最后一行 */
 const lastNode = ref<HTMLElement>();
 /* 哪些对象不能存在 */
-const selectActions = ['title', 'hold', 'color', 'delete', 'bias', 'underline'];
+const selectActions = [
+  'title',
+  'hold',
+  'color',
+  'delete',
+  'bias',
+  'underline',
+  'line',
+  'code',
+  'image'
+];
 
 /* 默认按钮 */
 const buttonState = {
@@ -114,8 +125,15 @@ const handleButtonNav = (actions: string): void => {
         /* 重新绑定最后一个节点 */
         lastNode.value = newElement;
       } else {
-        /* 部分处理 */
-        otherChange(actions);
+        if (actions == 'line') {
+          /* 插入水平线 */
+          insertLine();
+        } else if (actions == 'code') {
+          insertCode();
+        } else {
+          /* 部分处理 */
+          otherChange(actions);
+        }
       }
     }
   }
@@ -216,9 +234,6 @@ const otherChange = (actions: string): void => {
         /* 全选字段 */
         const isAll = isSelectAll(commonAncestorContainer, parentNodeLength);
 
-        console.log(startOffset);
-        console.log(endOffset);
-
         if (
           startOffset === 0 &&
           startOffset < endOffset &&
@@ -273,6 +288,7 @@ const insertDocument = (actions: string, parentNode: ParentNode | Node | null): 
       console.log('没有空节点');
     }
   }
+  console.log(parentNode);
 };
 
 // const getNodesBetween = (startNode: Node | ChildNode | null, endNode: Node | ChildNode) => {
@@ -292,19 +308,32 @@ const insertDocument = (actions: string, parentNode: ParentNode | Node | null): 
 const insertP = (e: Event): void => {
   // 获取光标位置或选择的文本
   const selection = window.getSelection();
-  if (selection) {
+  if (selection && lastNode.value) {
     const range = selection.getRangeAt(0);
+    /* 专门记录code的 */
+    const rangeParent = range.commonAncestorContainer.parentNode as HTMLElement;
+    console.log(rangeParent);
     /* 位置 */
-    const offset = range.startOffset;
+    const startOffset = range.startOffset;
     const lastNodeLength = lastNode.value?.textContent?.length;
-    if (
+    console.log(range.commonAncestorContainer);
+    console.log(lastNode.value);
+    if (rangeParent.className == 'pre-code' || lastNode.value.className == 'pre-code') {
+      if (rangeParent.tagName !== 'CODE') {
+        console.log('=======');
+        document.execCommand('insertHTML', true, '<span class="pre-code"><br/></span>');
+      } else {
+        document.execCommand('insertHTML', true, '<span class="pre-code"><br/></span>');
+      }
+      e.preventDefault();
+    } else if (
       range.startContainer.parentNode instanceof Element &&
       range.startContainer.parentNode.tagName !== 'P' &&
       range.startContainer.parentNode !== editor.value
     ) {
       /* 如果长度相同的情况下 */
-      if (offset === lastNodeLength) {
-        document.execCommand('insertHTML', false, '<p><br/></p>');
+      if (startOffset === lastNodeLength) {
+        document.execCommand('insertHTML', true, '<p><br/></p>');
         e.preventDefault();
       }
     }
@@ -451,11 +480,8 @@ const commonChange = (
           } else if (position == 'end') {
             if (range.startContainer.parentNode && range.endContainer.parentNode) {
               try {
-                console.log();
                 parentNode.insertBefore(fragment, range.endContainer.parentNode?.nextSibling);
               } catch (e) {
-                console.log('报错了');
-                console.log(fragment);
                 if (parentNode.parentNode) {
                   parentNode.parentNode.insertBefore(
                     fragment,
@@ -524,12 +550,13 @@ const findParentNode = (actions: string, node: ParentNode | Node | null): void =
  * 找到父节点
  * @param node
  */
-const findParent = (node: ParentNode | Node | null): Node | ParentNode | undefined => {
+const findParent = (
+  node: HTMLElement | Element | ParentNode | Node | null | undefined
+): Node | ParentNode | HTMLElement | Element | undefined => {
   if (node) {
-    if (node.parentNode?.parentNode !== editor.value && node.parentNode !== editor.value) {
+    if (node.parentNode !== editor.value && editor.value?.contains(node.parentNode)) {
       return findParent(node.parentNode);
     } else {
-      console.log(node);
       return node;
     }
   }
@@ -548,7 +575,8 @@ const middleChange = (
 ): void => {
   const selection = window.getSelection();
   if (
-    selection?.rangeCount > 0 &&
+    selection &&
+    selection.rangeCount > 0 &&
     lastNode?.value &&
     selection?.focusNode &&
     parentNode?.parentNode
@@ -563,28 +591,136 @@ const middleChange = (
       range.surroundContents(actionsNode);
       actionsNode.appendChild(fragment);
     } else {
-      console.log('去除');
       const actionsNode = document.createElement('span');
       range.surroundContents(actionsNode);
-      actionsNode.appendChild(fragment);
       // 创建一个新的范围 -- 中间节点
       if (actionsNode.nextSibling && range.commonAncestorContainer.parentNode) {
         const newRange = document.createRange();
         /* 先拿到下一个节点放外面 */
         newRange.selectNodeContents(actionsNode.nextSibling);
         const newExtractedContents = newRange.extractContents();
-        const fragment = document.createDocumentFragment();
-        fragment.appendChild(newExtractedContents);
+        const newFragment = document.createDocumentFragment();
+        newFragment.appendChild(newExtractedContents);
         const actionsParentNode = document.createElement(parentNode.nodeName);
-        actionsParentNode.appendChild(fragment);
+        actionsParentNode.appendChild(newFragment);
         parentNode.parentNode.insertBefore(
           actionsParentNode,
           range.commonAncestorContainer?.nextSibling
         );
+        /* 将变化的节点扔到被转移节点的前面 */
+        parentNode.parentNode.insertBefore(fragment, actionsParentNode);
+        actionsNode.remove();
       }
     }
   }
 };
+
+/**
+ * 插入水平线
+ */
+const insertLine = (): void => {
+  // document.execCommand('insertHTML', true, '<hr>');//废弃的方法
+  // document.execCommand('insertHTML', true, '<p><br/></p>');
+  /* 找到lastNode.value的父亲组件 */
+  const parentNode = findParent(lastNode.value);
+  // 获取当前的选区
+  const selection = window.getSelection();
+  if (editor.value && parentNode && selection && selection.rangeCount > 0) {
+    const hr = document.createElement('hr');
+    const p = document.createElement('p');
+    const br = document.createElement('br');
+    p.appendChild(br);
+
+    editor.value?.insertBefore(hr, parentNode?.nextSibling);
+    editor.value?.insertBefore(p, hr.nextSibling);
+
+    // 创建一个新的 range
+    const range = document.createRange();
+    // 设置 range 的起点和终点在新插入的 p 元素内
+    range.setStart(p, 0);
+    range.setEnd(p, 0);
+    // 移出所有选区
+    selection.removeAllRanges();
+    // 将新的 range 设置为选区
+    selection.addRange(range);
+  }
+};
+
+/**
+ * 插入代码块
+ */
+const insertCode = (): void => {
+  // document.execCommand(
+  //   'insertHTML',
+  //   true,
+  //   `<div class="pre-box" contenteditable="false"><div class="pre-header"><div></div><div></div><div></div></div><pre class="pre-body"><code contenteditable="true"><span class="pre-code"><br/></span></code></pre>`
+  // );
+  /* 找到lastNode.value的父亲组件 */
+  const parentNode = findParent(lastNode.value);
+  // 获取当前的选区
+  const selection = window.getSelection();
+  if (editor.value && parentNode && selection && selection.rangeCount > 0) {
+    const outerDiv = document.createElement('div');
+    outerDiv.className = 'pre-box';
+    outerDiv.contentEditable = 'false';
+
+    const preHeader = document.createElement('div');
+    preHeader.className = 'pre-header';
+
+    const preHeaderLeft = document.createElement('div');
+    preHeaderLeft.className = 'pre-header-left';
+    preHeaderLeft.innerHTML = '<div></div><div></div><div></div>';
+
+    const preHeaderRight = document.createElement('div');
+    preHeaderRight.className = 'pre-header-right';
+
+    const pre = document.createElement('pre');
+    pre.className = 'pre-body';
+
+    const code = document.createElement('code');
+    code.contentEditable = 'true';
+    code.innerHTML = '<span class="pre-code"><br></span>';
+
+    // 挂点节点
+    pre.appendChild(code);
+    outerDiv.appendChild(preHeader);
+    outerDiv.appendChild(pre);
+    preHeader.appendChild(preHeaderLeft);
+    preHeader.appendChild(preHeaderRight);
+
+    editor.value?.insertBefore(outerDiv, parentNode?.nextSibling);
+
+    // 创建一个新的 range
+    const range = document.createRange();
+    // 设置 range 的起点和终点在新插入的 p 元素内
+    range.setStart(code, 0);
+    range.setEnd(code, 0);
+    // 移出所有选区
+    selection.removeAllRanges();
+    // 将新的 range 设置为选区
+    selection.addRange(range);
+
+    /* 挂载按钮 */
+    const buttonVNode = h(ButtonComponent, {
+      onClick: (e: Event) => {
+        const target = e.target as Element;
+        if (target?.parentElement) {
+          const parentNode = findParent(target) as Element;
+          parentNode?.remove();
+        }
+      }
+    });
+
+    // 渲染按钮 VNode 到 outerDiv
+    render(buttonVNode, preHeaderRight);
+  }
+};
+
+const ButtonComponent = defineComponent({
+  setup(props, { emit }) {
+    return () => h('button', '删除');
+  }
+});
 
 onMounted(() => {
   /* 挂载全局点击事件 */
@@ -612,6 +748,7 @@ onMounted(() => {
         }
       }
       if (mutation.removedNodes.length > 0 && editor) {
+        console.log(mutation);
         // 当有节点被移除时，检查editor是否没有子节点
         if (editor.value?.firstChild === null) {
           deleteDocument();

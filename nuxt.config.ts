@@ -47,19 +47,19 @@ export default defineNuxtConfig({
   /* 设置seo */
   app: {
     head: {
-      title: '标题...',
+      title: '个人博客',
       meta: [
         /* seo搜索引擎关键词 */
         /* { name:'keywords',content:'关键词....'} */
       ],
-      link: [{ rel: 'logo icon', href: '/logo.png' }] // 路径是public下的
+      link: [{ rel: 'logo icon', href: '/favicon.ico' }] // 路径是public下的
     }
     /* 动画效果 */
     // pageTransition: { name: 'layout', mode: 'in-out' }
   },
 
   /* css */
-  css: ['~/styles/reset.css', '~/styles/comment.css'],
+  css: ['~/styles/reset.css', '~/styles/comment.css', '~/styles/main.scss'],
 
   /* vue-tsc */
   typescript: {

@@ -12,11 +12,9 @@ const isSelectAll = (
   if (selection && node) {
     const range = selection.getRangeAt(0);
     const extractedContents = range.cloneContents();
-    console.log(extractedContents);
 
     const fragmentLength = getDocumentFragmentTextLength(extractedContents);
 
-    console.log(length, fragmentLength);
     /* 先判断获取的文章看看是不是全选了 */
     if (
       range.commonAncestorContainer.textContent &&

@@ -14,7 +14,9 @@ export default defineConfig({
     'button-default':
       'bg-transparent w-15 h-13 rounded-md hover:bg-sky-200 text-center flex-default flex-col',
     /* 弹性盒子默认 */
-    'flex-default': 'flex justify-center items-center'
+    'flex-default': 'flex justify-center items-center',
+    /* 默认的边框 */
+    'border-default': 'border-solid border-black box-border'
   },
   presets: [presetUno(), presetAttributify(), presetIcons(), presetTypography()],
   transformers: [transformerDirectives(), transformerVariantGroup()]
