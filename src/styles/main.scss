@@ -53,14 +53,4 @@
     }
 }
 
-input[type="text"] {  
-    /* 移除边框 */  
-    border: none;  
-    /* 移除背景色 */  
-    background-color: transparent;  
-    /* 移除内边距，这样文本会紧贴边框（如果有的话） */  
-    padding: 0;  
-    /* 根据需要调整其他样式，如字体、颜色等 */  
-    font-size: 16px;  
-    color: inherit; /* 继承父元素的文本颜色 */  
-  }  
+

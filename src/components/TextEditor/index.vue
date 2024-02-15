@@ -1,8 +1,8 @@
 <template>
-  <div class="box-border h-screen w-screen overflow-x-hidden overflow-y-scroll">
+  <div class="box-border">
     <div
       ref="editorBody"
-      class="m-[0_auto] mt-10 box-border h-auto max-w-200 border-1 border-gray-300/50 rounded-lg border-solid shadow-lg"
+      class="box-border h-auto max-w-200 border-2 border-gray-300/70 rounded-lg border-solid shadow-lg"
     >
       <!-- 各种功能 -->
       <div
@@ -17,7 +17,7 @@
             >
               <div class="flex items-center justify-around">
                 <button
-                  class="box-border button-default"
+                  class="box-border button-editor"
                   :class="checkButton(items.actions)"
                   @click="clickNav(items, index)"
                 >

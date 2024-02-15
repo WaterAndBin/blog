@@ -18,7 +18,7 @@ const _emits = defineEmits<{
     <template v-if="_props.title == '标题'">
       <div v-for="(items, index) in _props.children" :key="index" class="">
         <button
-          class="mx-1 w-24 flex-row text-left button-default hover:bg-sky-200/50"
+          class="mx-1 w-24 flex-row text-left button-editor hover:bg-sky-200/50"
           @click="_emits('handleButtonNav', items.actions)"
         >
           <div class="">
@@ -37,7 +37,7 @@ const _emits = defineEmits<{
     </template>
     <template v-else>
       <div v-for="(items, index) in _props.children" :key="index" class="">
-        <button class="mx-1 h-9 w-22 flex-row text-left button-default hover:bg-sky-200/50">
+        <button class="mx-1 h-9 w-22 flex-row text-left button-editor hover:bg-sky-200/50">
           <svg-icon :name="items.name" class="h-6 w-6"></svg-icon>
           <span class="block w-16 text-center">{{ items.title }}</span>
         </button>
