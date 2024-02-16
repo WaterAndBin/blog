@@ -1,12 +1,17 @@
 <script lang="ts" setup>
-const show = ref<boolean>(true);
+const show = ref<boolean>(false);
 const loginState = reactive({
   account: '',
   password: ''
 });
 
+const keywords = ['账号', '密码'];
+
 const hanleSumbit = (): void => {
-  console.log(123);
+  const checkData = checkObj(loginState, keywords);
+  if (checkData == false) {
+    console.log('登录');
+  }
 };
 
 // 不使用模板

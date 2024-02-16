@@ -66,3 +66,7 @@ https://github.com/simoneb/fast-folder-size/issues/60
 1. 代码块增加删除按钮，代码块的样式修改
 2. 修改了document.execCommand方法，将部分的document.execCommand废弃掉，用其他方法实现，保证其他浏览器可以兼容
 3. 开始书写界面
+
+2024-2-16
+1. 完善各页面，登录注册等
+2. 增加了消息弹框

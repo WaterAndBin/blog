@@ -1,1 +1,8 @@
 /* 公共的样式 */
+.trans {
+    transform: translate(-50%, -50%);
+}
+
+body {
+    position: relative;
+}

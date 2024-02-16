@@ -40,14 +40,13 @@ module.exports = {
     "@typescript-eslint/prefer-function-type": "off",
     'no-lonely-if': "off", // 取消if但是没有else
     'eqeqeq': 'off', // 取消用 ==,
-    "@unocss/blocklist": "warn" // or "error"
+    "@unocss/blocklist": "warn", // or "error"
+    "array-callback-return": "off"
   },
-  overrides: [
-    {
-      files: ['./src/**/*.{js,ts,vue}', './src/*.{js,ts,vue}'],
-      rules: {
-        'vue/multi-word-component-names': 'off'
-      }
+  overrides: [{
+    files: ['./src/**/*.{js,ts,vue}', './src/*.{js,ts,vue}'],
+    rules: {
+      'vue/multi-word-component-names': 'off'
     }
-  ]
+  }]
 };
