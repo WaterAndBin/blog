@@ -10,25 +10,9 @@
 import http from '~/server';
 
 /* 写法一 */
-export const getText1 = async (id: string) => {
-  return await http.get<{ code: number; data: any }>('/catalog/catPicturesList', { id }); // 接收，地址，参数
-};
-
-/* 写法二 */
-export const getText2 = async (id: string) => {
-  const res = await http.get<{ code: number; data: any }>('/catalog/catPicturesList', { id });
-  return res;
-};
-
-/* 写法三 */
-export const getText3 = (id: string) => {
-  http
-    .get<{ code: number; data: any }>('/catalog/catPicturesList', { id })
-    .then((data: any) => {
-      console.log(data);
-      return data;
-    })
-    .catch((error: any) => {
-      console.log(error);
-    });
+export const getText1 = async (id: string): Promise<any> => {
+  return await http.post<{ code: number; data: any }>('/users/login', {
+    username: '123',
+    password: '123'
+  }); // 接收，地址，参数
 };

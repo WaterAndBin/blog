@@ -1,34 +1,17 @@
 interface HttpRequest {
   url: string;
-  params?: unknown;
-  body?: null;
+  params?: any;
+  body?: any;
   methods?: any;
 }
 
-const request = async (obj: HttpRequest): Promise<void> => {
-  const res = new Promise<void>((resolve, reject): void => {
-    void useFetch(obj.url, {
+const request = (obj: HttpRequest): any => {
+  const res = new Promise<void>((resolve, reject) => {
+    useFetch(obj.url, {
       method: obj.methods ?? 'GET',
       query: obj.params ?? undefined,
       body: obj.body ?? undefined,
-      baseURL: '/api', // 跨域处理用
-
-      onRequest({ request, options }) {
-        /* 设置请求头 */
-        const userStore = useUserStore();
-        const token = userStore.token;
-
-        if (token !== '') {
-          options.headers = {
-            ...options.headers,
-            Authorization: token
-          };
-        } else {
-          options.headers = {
-            ...options.headers
-          };
-        }
-      },
+      baseURL: '/api',
 
       onRequestError({ request, options, error }) {
         /* 处理错误请求 */
@@ -49,8 +32,8 @@ const request = async (obj: HttpRequest): Promise<void> => {
       }
     });
   });
-
-  await res;
+  console.log(res);
+  return res;
 };
 
 interface Http {
@@ -62,11 +45,11 @@ export const http: Http = {
   async get(url, params) {
     return await new Promise((resolve, reject) => {
       request({ url, params, methods: 'GET' })
-        .then((res) => {
-          resolve(res as any);
+        .then((res: any) => {
+          resolve(res);
           return res;
         })
-        .catch((err) => {
+        .catch((err: any) => {
           reject(err);
           throw err;
         });
@@ -75,11 +58,11 @@ export const http: Http = {
   async post(url, body) {
     return await new Promise((resolve, reject) => {
       request({ url, body, methods: 'POST' })
-        .then((res) => {
-          resolve(res as any);
+        .then((res: any) => {
+          resolve(res);
           return res;
         })
-        .catch((err) => {
+        .catch((err: any) => {
           reject(err);
           throw err;
         });

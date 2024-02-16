@@ -40,7 +40,7 @@ export default defineNuxtConfig({
   /* 打包之后的地址 */
   routeRules: {
     '/api/**': {
-      proxy: process.env.NUXT_PUBLIC_API_BASE
+      proxy: 'http://127.0.0.1:9090/**'
     }
   },
 

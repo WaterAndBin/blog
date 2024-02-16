@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { getText1 } from '~/server/api/text';
+
 const show = ref<boolean>(false);
 const loginState = reactive({
   account: '',
@@ -8,6 +10,7 @@ const loginState = reactive({
 const keywords = ['账号', '密码'];
 
 const hanleSumbit = (): void => {
+  getText1('123');
   const checkData = checkObj(loginState, keywords);
   if (checkData == false) {
     console.log('登录');
