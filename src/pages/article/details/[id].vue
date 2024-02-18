@@ -1,0 +1,3 @@
+<template>
+  <ArticleBody></ArticleBody>
+</template>
