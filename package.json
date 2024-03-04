@@ -61,6 +61,7 @@
     "husky": "^8.0.0",
     "lint-staged": "^15.1.0",
     "nuxt": "^3.8.0",
+    "nuxt-icon": "^0.6.8",
     "prettier": "^3.0.3",
     "sass": "^1.70.0",
     "sass-loader": "^14.1.0",
