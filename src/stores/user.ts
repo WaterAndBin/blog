@@ -3,7 +3,7 @@ const useUserStore = defineStore('user', {
   persist: true,
   state: () => {
     return {
-      token: '测试。。。。。'
+      token: ''
     };
   },
   actions: {

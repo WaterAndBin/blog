@@ -1,12 +1,35 @@
 <script lang="ts" setup>
-const show = ref<boolean>(true);
-const loginState = reactive({
+import { userRegister } from '~/server/api/user';
+import type { userAccount } from '~/types/user';
+
+const show = ref<boolean>(false);
+const keywords = ['账号', '密码'];
+const router = useRouter();
+
+const loginState = reactive<userAccount>({
   account: '',
   password: ''
 });
 
-const hanleSumbit = (): void => {
-  console.log(123);
+const hanleSumbit = async (): Promise<void> => {
+  const checkData = checkObj(loginState, keywords);
+  if (checkData == false) {
+    const res = await userRegister(loginState);
+    if (res.code == 200) {
+      useMessage({
+        message: '注册成功',
+        type: 'success'
+      });
+      router.push('/account/login');
+    } else {
+      useMessage({
+        message: res.message,
+        type: 'warn'
+      });
+    }
+  } else {
+    show.value = true;
+  }
 };
 
 // 不使用模板
@@ -33,8 +56,12 @@ definePageMeta({
               :show="show"
             ></DefaultInput>
           </div>
+          <div class="text-sm">
+            已有账号?
+            <nuxt-link to="/account/login" class="no-underline">点击登录</nuxt-link>
+          </div>
           <div class="my-5 text-center">
-            <button class="button-default" @click.enter="hanleSumbit">提交</button>
+            <button class="button-default" @click.enter="hanleSumbit">注册</button>
           </div>
         </form>
       </div>

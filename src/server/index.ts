@@ -7,15 +7,40 @@ interface HttpRequest {
 
 const request = (obj: HttpRequest): any => {
   const res = new Promise<void>((resolve, reject) => {
+    const userStore = useUserStore();
+
     useFetch(obj.url, {
       method: obj.methods ?? 'GET',
       query: obj.params ?? undefined,
       body: obj.body ?? undefined,
       baseURL: '/api',
 
+      onRequest({ options }) {
+        /* 设置请求头 */
+        const token = userStore.token;
+
+        if (token) {
+          options.headers = {
+            ...options.headers,
+            Authorization: 'Bearer ' + token
+          };
+        } else {
+          options.headers = {
+            ...options.headers,
+            Authorization: ''
+          };
+        }
+      },
+
       onRequestError({ request, options, error }) {
         /* 处理错误请求 */
         console.log('请求失败了');
+
+        useMessage({
+          message: '网络出错了',
+          type: 'error'
+        });
+
         reject(error);
       },
 
@@ -28,11 +53,16 @@ const request = (obj: HttpRequest): any => {
       onResponseError({ request, response, options }) {
         /* 处理响应错误 */
         console.log('处理响应错误');
+
+        useMessage({
+          message: '响应超时',
+          type: 'error'
+        });
+
         reject(response);
       }
     });
   });
-  console.log(res);
   return res;
 };
 

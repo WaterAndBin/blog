@@ -1,19 +1,36 @@
 <script lang="ts" setup>
-import { getText1 } from '~/server/api/text';
+import { userLogin } from '~/server/api/user';
+import type { userAccount } from '~/types/user';
 
 const show = ref<boolean>(false);
-const loginState = reactive({
+const keywords = ['账号', '密码'];
+const userStore = useUserStore();
+const router = useRouter();
+
+const loginState = reactive<userAccount>({
   account: '',
   password: ''
 });
 
-const keywords = ['账号', '密码'];
-
-const hanleSumbit = (): void => {
-  getText1('123');
+const hanleSumbit = async (): Promise<void> => {
   const checkData = checkObj(loginState, keywords);
   if (checkData == false) {
-    console.log('登录');
+    const res = await userLogin(loginState);
+    if (res.code == 200) {
+      useMessage({
+        message: '登录成功',
+        type: 'success'
+      });
+      userStore.setToken(res.token);
+      router.push('/home');
+    } else {
+      useMessage({
+        message: res.message,
+        type: 'warn'
+      });
+    }
+  } else {
+    show.value = true;
   }
 };
 
@@ -41,8 +58,12 @@ definePageMeta({
               :show="show"
             ></DefaultInput>
           </div>
+          <div class="text-sm">
+            未有账号?
+            <nuxt-link to="/account/register" class="no-underline">点击注册</nuxt-link>
+          </div>
           <div class="my-5 text-center">
-            <button class="button-default" @click.enter="hanleSumbit">提交</button>
+            <button class="button-default" @click.enter="hanleSumbit">登录</button>
           </div>
         </form>
       </div>
