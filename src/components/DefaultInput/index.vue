@@ -1,6 +1,9 @@
 <template>
   <label class="relative my-4">
-    <span class="mb-2 text-lg font-extralight font-semibold font-serif text-stone-800">
+    <span
+      v-if="props.titleRequire"
+      class="mb-2 text-lg font-extralight font-semibold font-serif text-stone-800"
+    >
       {{ title }}
       <span class="text-lg text-red-600">*</span>
     </span>
@@ -64,6 +67,11 @@ const props = defineProps({
     // 确认多一次密码
     type: String,
     default: ''
+  },
+  titleRequire: {
+    /* 是否需要标题 */
+    type: Boolean,
+    default: true
   }
 });
 

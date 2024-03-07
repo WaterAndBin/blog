@@ -1,17 +1,17 @@
 <script lang="ts" setup></script>
 
 <template>
-  <nuxt-link to="/article/details/123" target="_blank" class="no-underline color-black">
-    <div class="w-180 h-50 my-4 border-default border-3 cursor-pointer shadow-lg">
-      <div class="w-full h-full flex px-2 py-3 box-border">
+  <nuxt-link to="/article/details/123" target="_blank" class="color-black no-underline">
+    <div class="my-4 border-default h-50 w-180 cursor-pointer border-3 shadow-lg">
+      <div class="box-border h-full w-full flex px-2 py-3">
         <!-- 图片 -->
-        <div class="h-full flex items-center mr-2">
+        <div class="mr-2 h-full flex items-center">
           <nuxt-img class="w-70 overflow-hidden" src="c++.png" />
         </div>
         <!-- 文字 -->
-        <div class="flex flex-col w-0 flex-grow ml-2">
+        <div class="ml-2 w-0 flex flex-grow flex-col">
           <!-- 标题 -->
-          <div class="w-full truncate mb-3 text-2xl font-semibold">
+          <div class="mb-3 w-full truncate text-2xl font-semibold">
             这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是标题这是���题
           </div>
           <!-- 内容 -->

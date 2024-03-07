@@ -2,8 +2,9 @@
   <div class="box-border">
     <div
       ref="editorBody"
-      class="box-border h-auto max-w-200 border-2 border-gray-300/70 rounded-lg border-solid shadow-lg"
+      class="border-default box-border h-auto max-w-200 border-3 rounded-lg shadow-lg"
     >
+      <!-- class="box-border h-auto max-w-200 border-2 border-gray-300/70 rounded-lg border-solid shadow-lg" -->
       <!-- 各种功能 -->
       <div
         class="box-border h-14 w-full flex select-none items-center border-gray-900/10 rounded-t-lg px-1 py-2 shadow-md"
@@ -47,6 +48,7 @@
         class="editor-box box-border min-h-100 w-full cursor-text overflow-hidden p-3 outline-0"
         @mouseup="getMouseSelection"
         @keydown.enter="insertP"
+        @input="changeContent"
         v-html="content"
       ></div>
     </div>
@@ -61,6 +63,19 @@ import type { EditorButton } from '~/utils/editorDefaultButton';
 import { tagNameAction } from '~/utils/editorDefaultButton';
 import { findSameDocument } from '~/utils/findSameDocument';
 
+// const props = defineProps({
+//   modelValue: {
+//     // 数据
+//     type: String,
+//     required: true,
+//     default: ''
+//   }
+// });
+
+const emit = defineEmits<{
+  (event: 'update:modelValue', modelValue: string): void;
+}>();
+
 // const content =
 // '<p>123 <strong>4<s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
 const content =
@@ -73,6 +88,14 @@ const editorButton = useEditorButton();
 const editor = ref<HTMLElement | null>(null);
 const editorNav = ref<HTMLElement | null>(null);
 const editorBody = ref<HTMLElement | null>(null);
+
+const changeContent = (event: Event): void => {
+  const editorElement = editor.value; // 获取 <div id="editor" ...> 元素
+  if (editorElement) {
+    const editorHTML = editorElement.innerHTML; // 获取编辑器内容的 HTML
+    emit('update:modelValue', editorHTML);
+  }
+};
 
 /* 记录点击的最后一行 */
 const lastNode = ref<HTMLElement>();

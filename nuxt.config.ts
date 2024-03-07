@@ -22,7 +22,8 @@ export default defineNuxtConfig({
     // '@nuxtjs/eslint-module', //谨慎开启，会报错很多地方，主要用来检查一些函数是否用值,或者console，建议开发完之后使用
     '@nuxtjs/svg-sprite',
     '@pinia-plugin-persistedstate/nuxt',
-    '@nuxt/image'
+    '@nuxt/image',
+    'nuxt-icon'
   ],
 
   /* 配置跨域代理 */

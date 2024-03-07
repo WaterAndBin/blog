@@ -6,6 +6,8 @@ interface HttpRequest {
 }
 
 const request = (obj: HttpRequest): any => {
+  console.log(obj.body);
+
   const res = new Promise<void>((resolve, reject) => {
     const userStore = useUserStore();
 
