@@ -6,8 +6,11 @@ import http from '~/server';
  * @param data 数据
  * @returns
  */
-export async function picUpload(data: Blob): Promise<{ code: number; message: string }> {
-  console.log(data);
-  console.log(typeof data);
-  return await http.post<{ code: number; message: string }>('/upload/picUpload', data);
+export async function picUpload(
+  data: FormData
+): Promise<{ code: number; data: string; message: string }> {
+  return await http.post<{ code: number; data: string; message: string }>(
+    '/upload/picUpload',
+    data
+  );
 }

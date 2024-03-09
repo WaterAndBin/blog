@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col items-center overflow-hidden">
     <h2>编辑属于你的文章</h2>
     <div>
-      <div><TextEditor v-model="state.article_cover"></TextEditor></div>
+      <div><TextEditor v-model="state.article_content"></TextEditor></div>
       <div class="mt-4 flex-default flex-col">
         <div class="text-3xl">封面</div>
         <div class="my-4 border-default h-50 w-110 cursor-pointer border-3">
@@ -57,6 +57,7 @@
 </template>
 
 <script lang="ts" setup>
+import { publishArticle } from '~/server/api/article';
 import { picUpload } from '~/server/api/upload';
 
 // import { publishArticle } from '~/server/api/article';
@@ -68,18 +69,16 @@ const imageSrc = ref(''); // 用于存储 Base64 编码的图片数据
 const initState = {
   article_title: '', // 文章标题
   article_cover: '', // 文章封面
-  article_content: '' // 文章内容
+  article_content: '', // 文章内容
+  coverFile: new File([], '')
 };
 const state = reactive({ ...initState });
 
-const onFileChange = async (event: Event): Promise<void> => {
+const onFileChange = (event: Event): void => {
   const file = (event.target as HTMLInputElement).files?.[0];
   if (file) {
-    const res = await picUpload(file);
-    console.log(res);
-
+    state.coverFile = file;
     const reader = new FileReader();
-
     reader.onload = (e: any) => {
       imageSrc.value = e.target.result; // 这里是 Base64 编码的图片数据
     };
@@ -92,15 +91,29 @@ const clearImage = (): void => {
   imageSrc.value = ''; // 清除图片数据
 };
 
-const sure = (): void => {
-  // const formData = new FormData();
-  // formData.append('article_title', state.article_title); // 文章标题
-  // formData.append('article_content', state.article_content); // 文章内容
-  // formData.append('article_title', state.article_title);
-
-  // const res = await publishArticle(formData);
-  // console.log(res);
-  console.log();
+const sure = async (): Promise<void> => {
+  /* 看是否有封面 */
+  if (state.coverFile.name !== '' && state.coverFile.size !== 0) {
+    const picData = new FormData();
+    picData.append('file', state.coverFile);
+    const res = await picUpload(picData);
+    if (res.code == 200) {
+      state.article_cover = res.data;
+    }
+  }
+  const timerData = Object.assign({}, state, { coverFile: undefined });
+  const res = await publishArticle(timerData);
+  if (res.code == 200) {
+    useMessage({
+      message: '发布文章成功',
+      type: 'success'
+    });
+  } else {
+    useMessage({
+      message: res.message,
+      type: 'error'
+    });
+  }
 };
 </script>
 
