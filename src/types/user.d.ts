@@ -17,9 +17,9 @@ export interface userListPagination {
 }
 
 /**
- * 角色列表
+ * 用户列表
  */
-export interface userList {
+export interface UserList {
   id: number; // 主键 id
   role_id: number; // 角色id
   user_name: string; // 标签名字
