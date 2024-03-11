@@ -24,8 +24,10 @@ const router = useRouter();
           class="border-default flex-default border-3 bg-transparent px-1 text-lg hover:bg-gray-100"
           @click="router.push('/new')"
         >
+          <!-- <nuxt-link to="/new"> -->
           <svg-icon name="header-publish.svg" class="mr-1 h-6 w-6 cursor-pointer"></svg-icon>
           <span>发布文章</span>
+          <!-- </nuxt-link> -->
         </button>
       </div>
     </div>

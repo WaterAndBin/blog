@@ -26,11 +26,13 @@ const getData = async (): Promise<void> => {
 };
 
 await getData();
+// onMounted(() => {
+// getData();
+// });
 </script>
 
 <template>
   <div>
-    {{ timerData }}
     <ArticleBody :data="timerData"></ArticleBody>
   </div>
 </template>

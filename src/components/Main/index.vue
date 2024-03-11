@@ -16,9 +16,7 @@ const getData = async (): Promise<void> => {
   }
 };
 
-onMounted(() => {
-  getData();
-});
+await getData();
 </script>
 
 <template>

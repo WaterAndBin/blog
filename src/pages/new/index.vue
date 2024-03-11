@@ -70,7 +70,7 @@ const initState = {
   article_title: '', // 文章标题
   article_cover: '', // 文章封面
   article_content: '', // 文章内容
-  coverFile: new File([], '')
+  coverFile: '' as any
 };
 const state = reactive({ ...initState });
 
