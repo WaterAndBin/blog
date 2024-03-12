@@ -10,13 +10,13 @@ const content = ref<string>('内容测试内容测试');
 
 <template>
   <nuxt-link :to="`/article/details/${data.id}`" target="_blank" class="color-black no-underline">
-    <div class="mt-4 border-default h-60 w-180 cursor-pointer border-3 shadow-lg">
+    <div class="mt-4 border-default h-55 w-180 cursor-pointer border-3 shadow-lg">
       <div class="box-border h-full w-full flex flex-col justify-around px-2 py-2">
         <div class="box-border h-full w-full flex flex-1">
           <!-- 图片 -->
           <div class="mr-2 h-full flex items-center">
             <nuxt-img
-              class="w-70 h-50 overflow-hidden"
+              class="h-37 w-65 overflow-hidden"
               :src="'http://127.0.0.1:9090/' + data.article_cover"
             />
           </div>
@@ -32,7 +32,7 @@ const content = ref<string>('内容测试内容测试');
             </div>
           </div>
         </div>
-        <div class="mt-2 font-semibold">
+        <div class="mt-1 font-semibold">
           <span class="mr-3">作者：{{ data.author.user_name }}</span>
           <span>发布时间：{{ data.created_time }}</span>
         </div>

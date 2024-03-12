@@ -792,7 +792,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style>
+<style scoped lang="scss">
 .highlight {
   color: red;
 }

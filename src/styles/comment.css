@@ -5,4 +5,5 @@
 
 body {
     position: relative;
+    min-height: screen;
 }

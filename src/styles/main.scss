@@ -53,4 +53,16 @@
     }
 }
 
+p{
+    @apply my-2 tracking-wide	
+}
 
+hr{
+    @apply my-4
+}
+
+.articleBody_box{
+    button{
+        display: none !important;
+    }
+}

@@ -25,10 +25,12 @@ const getData = async (): Promise<void> => {
   }
 };
 
-await getData();
-// onMounted(() => {
-// getData();
-// });
+// await getData();
+onMounted(() => {
+  nextTick(() => {
+    getData();
+  });
+});
 </script>
 
 <template>
