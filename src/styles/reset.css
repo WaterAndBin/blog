@@ -137,15 +137,9 @@ table {
 
 button,
 input {
-  font-family:
-    Microsoft YaHei,
-    Heiti SC,
-    tahoma,
-    arial,
-    Hiragino Sans GB,
-    '\5B8B\4F53',
-    sans-serif;
   border: 0;
   outline: none;
   cursor: pointer;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+  '微软雅黑', Arial, sans-serif;
 }

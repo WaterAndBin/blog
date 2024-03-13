@@ -6,6 +6,9 @@ const router = useRouter();
 const route = useRoute();
 const { id } = route.params;
 
+/* dom */
+const ReportDialogRef = ref();
+
 const timerData = ref<ArticleDetail>();
 
 /**
@@ -25,6 +28,10 @@ const getData = async (): Promise<void> => {
   }
 };
 
+const show = (): void => {
+  ReportDialogRef.value.show();
+};
+
 // await getData();
 onMounted(() => {
   nextTick(() => {
@@ -35,6 +42,8 @@ onMounted(() => {
 
 <template>
   <div>
-    <ArticleBody :data="timerData"></ArticleBody>
+    <ArticleBody :data="timerData" :show-dialog="show"></ArticleBody>
+    <!-- 举报弹窗 -->
+    <ReportDialog ref="ReportDialogRef"></ReportDialog>
   </div>
 </template>

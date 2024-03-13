@@ -5,6 +5,7 @@ const router = useRouter();
 
 const props = defineProps<{
   data: ArticleDetail | undefined;
+  showDialog: () => void;
 }>();
 // const { data } = props;
 </script>
@@ -18,7 +19,11 @@ const props = defineProps<{
       <div class="relative">
         <!-- 举报操作 -->
         <div class="report absolute -right-2 -top-2">
-          <svg-icon name="report" class="relative h-7 w-7 cursor-pointer"></svg-icon>
+          <svg-icon
+            name="report"
+            class="relative h-7 w-7 cursor-pointer"
+            @click="props.showDialog()"
+          ></svg-icon>
           <div
             class="tip absolute h-6 w-12 bg-black text-center leading-6 opacity-0 transition-all -bottom-5 -left-2"
           >
@@ -55,8 +60,6 @@ const props = defineProps<{
         </button>
       </div>
     </div>
-
-    <ReportDialog></ReportDialog>
   </div>
 </template>
 

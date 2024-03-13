@@ -8,7 +8,7 @@
       <span class="text-lg text-red-600">*</span>
     </span>
     <textarea
-      class="border-default box-border max-h-none min-h-6 w-full border-3 rounded px-2 py-1 text-xl"
+      class="border-default box-border max-h-none min-h-6 w-full border-3 rounded px-2 py-1 text-xl font-semibold"
       :class="isResize ? 'resize' : 'resize-none'"
       :type="type"
       :value="modelValue"
@@ -80,7 +80,7 @@ const props = defineProps({
   rows: {
     /* 行数 */
     type: Number,
-    default: 3
+    default: 4
   },
   isResize: {
     /* 是否可以拖拽 */
