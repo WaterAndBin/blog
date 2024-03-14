@@ -1,52 +1,63 @@
 <template>
-  <Teleport to="body">
-    <div v-if="state.showAnimate" class="reportDialog absolute z-999 h-full w-full bg-gray-500/60">
-      <Transition name="dialog">
+  <div v-if="state.showMask">
+    <Teleport to="body">
+      <Transition name="dialogMask">
         <div
-          v-show="state.showMask"
-          class="reportDialog absolute border-default box-border h-100 w-100 border-4 bg-white p-4"
+          v-show="state.showAnimate"
+          class="reportDialog absolute z-999 h-full w-full bg-gray-500/60"
         >
-          <!-- 标题 -->
-          <div class="flex items-center justify-between">
-            <span class="text-2xl">举报反馈</span>
-            <span class="">
-              <svg-icon name="close" class="h-7 w-7 cursor-pointer" @click="close"></svg-icon>
-            </span>
-          </div>
-          <!-- 内容 -->
-          <div class="mt-2">
-            <div class="">
-              <div>举报类型</div>
-              <div class="grid grid-cols-4 mt-3 gap-2">
-                <button
-                  v-for="(items, index) in rejectButton"
-                  :key="index"
-                  class="button-default h-8 w-21"
-                  :class="state.reject_type == items.key ? 'bg-black text-white' : ''"
-                  @click="state.reject_type = items.key"
-                >
-                  {{ items.value }}
-                </button>
+          <Transition name="dialog">
+            <div
+              v-show="state.showAnimate"
+              class="reportDialog absolute border-default box-border h-100 w-100 border-4 bg-white p-4"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">举报反馈</span>
+                <span class="">
+                  <svg-icon name="close" class="h-7 w-7 cursor-pointer" @click="close"></svg-icon>
+                </span>
               </div>
-            </div>
-            <div class="mt-3">
-              <div>举报理由</div>
               <div class="mt-2">
-                <DefaultTextarea :title-require="false" :is-resize="false" />
+                <div class="">
+                  <div>举报类型</div>
+                  <div class="grid grid-cols-4 mt-3 gap-2">
+                    <button
+                      v-for="(items, index) in rejectButton"
+                      :key="index"
+                      class="button-default h-8 w-21"
+                      :class="state.reject_type == items.key ? 'bg-black text-white' : ''"
+                      @click="state.reject_type = items.key"
+                    >
+                      {{ items.value }}
+                    </button>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <div>举报理由</div>
+                  <div class="mt-2">
+                    <DefaultTextarea
+                      v-model="state.reject_reason"
+                      :title-require="false"
+                      :is-resize="false"
+                    />
+                  </div>
+                </div>
+                <div class="flex justify-around mt-3">
+                  <button class="button-default w-18 h-8" @click="close">取消</button>
+                  <button class="button-default w-18 h-8" @click="sumbit">提交</button>
+                </div>
               </div>
             </div>
-            <div class="flex justify-around mt-3">
-              <button class="button-default w-18 h-8">取消</button>
-              <button class="button-default w-18 h-8">提交</button>
-            </div>
-          </div>
+          </Transition>
         </div>
       </Transition>
-    </div>
-  </Teleport>
+    </Teleport>
+  </div>
 </template>
 
 <script lang="ts" setup>
+import { reportArticle } from '~/server/api/article';
+
 const rejectButton = [
   {
     key: 1,
@@ -79,8 +90,9 @@ const rejectButton = [
 ];
 
 const initState = {
-  showMask: true,
-  showAnimate: true,
+  showMask: false,
+  showAnimate: false,
+  id: -1,
   reject_type: 1,
   reject_reason: ''
 };
@@ -88,15 +100,43 @@ const state = reactive({
   ...initState
 });
 
-const show = (): void => {
+/**
+ * 展示
+ */
+const show = (id: number): void => {
+  state.id = id;
+  state.showMask = true;
   setTimeout(() => {
     state.showAnimate = true;
-  }, 100);
+  }, 150);
 };
 
+/**
+ * 关闭
+ */
 const close = (): void => {
-  state.showMask = false;
   state.showAnimate = false;
+  setTimeout(() => {
+    state.showMask = false;
+    cancel();
+  }, 500);
+};
+
+/**
+ * 重置
+ */
+const cancel = (): void => {
+  state.reject_type = 1;
+  state.reject_reason = '';
+};
+
+const sumbit = async (): Promise<void> => {
+  const res = await reportArticle({
+    id: state.id,
+    rejectType: state.reject_type,
+    rejectReason: state.reject_reason
+  });
+  console.log(res);
 };
 
 defineExpose({
@@ -113,13 +153,20 @@ defineExpose({
 }
 
 .dialog-enter-active,
-.dialog-leave-active {
+.dialog-leave-active,
+.dialogMask-enter-active,
+.dialogMask-leave-active {
   transition: all 0.5s ease;
 }
 
 .dialog-enter-from,
 .dialog-leave-to {
-  transform: translate(-50%, -100%);
+  transform: translate(-50%, -60%);
+  opacity: 0;
+}
+
+.dialogMask-enter-from,
+.dialogMask-leave-to {
   opacity: 0;
 }
 

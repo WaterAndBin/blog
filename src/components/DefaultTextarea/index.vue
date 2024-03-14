@@ -61,7 +61,11 @@ const props = defineProps({
     type: String,
     default: 'text'
   },
-  placeholderVaule: String, // 输入框提示内容
+  placeholderVaule: {
+    // 输入框提示内容
+    type: String,
+    default: ''
+  },
   again: {
     // 确认的显示与隐藏
     type: Boolean,

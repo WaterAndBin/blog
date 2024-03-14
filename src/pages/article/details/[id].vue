@@ -29,7 +29,7 @@ const getData = async (): Promise<void> => {
 };
 
 const show = (): void => {
-  ReportDialogRef.value.show();
+  ReportDialogRef.value.show(Number(id));
 };
 
 // await getData();
