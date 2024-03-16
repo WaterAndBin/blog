@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reportArticle } from '~/server/api/article';
+import { reportArticle } from '~/server/api/report';
 
 const rejectButton = [
   {

@@ -49,7 +49,11 @@ const request = (obj: HttpRequest): any => {
       onResponse({ request, response, options }) {
         /* 处理响应数据 */
         console.log('请求成功');
-        resolve(response._data);
+        if (response._data.code == -1) {
+          navigateTo('/account/login');
+        } else {
+          resolve(response._data);
+        }
       },
 
       onResponseError({ request, response, options }) {
