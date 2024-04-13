@@ -8,6 +8,7 @@ export interface AddArticle {
   article_title: string; // 文章标题
   article_cover: string; // 文章封面
   article_content: string; // 文章内容
+  tabs_id: string; // 文章标签
 }
 
 /**
@@ -32,7 +33,7 @@ export interface ArticleDetail {
   author_id: number;
   created_time: string;
   updated_time: string;
-  tabs_id: string | number[];
+  tabs_id: string;
   status: number;
   is_deleted: number;
   type: number;

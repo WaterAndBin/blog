@@ -46,6 +46,25 @@
           class="w-110"
         ></DefaultInput>
       </div>
+      <div class="flex-default flex-col">
+        <div class="text-3xl">文章标签选择</div>
+        <div class="mb-4 mt-2 flex">
+          <div
+            v-for="(items, index) in tabs"
+            :key="index + items.id"
+            class="mx-1 flex items-center"
+          >
+            <label for="fruit1">{{ items.tab_name }}</label>
+            <input
+              :id="items.tab_name"
+              v-model="state.tabs_id"
+              type="checkbox"
+              :name="items.tab_name"
+              :value="items.id"
+            />
+          </div>
+        </div>
+      </div>
       <!-- <div>私有还是共有的</div> -->
       <div class="mb-5 flex-default">
         <button class="border-default h-10 w-40 border-3 bg-transparent text-2xl" @click="sure">
@@ -58,6 +77,7 @@
 
 <script lang="ts" setup>
 import { publishArticle } from '~/server/api/article';
+import { getAllTabs } from '~/server/api/tab';
 import { picUpload } from '~/server/api/upload';
 
 // import { publishArticle } from '~/server/api/article';
@@ -70,7 +90,8 @@ const initState = {
   article_title: '', // 文章标题
   article_cover: '', // 文章封面
   article_content: '', // 文章内容
-  coverFile: '' as any
+  coverFile: '' as any,
+  tabs_id: []
 };
 const state = reactive({ ...initState });
 
@@ -102,7 +123,7 @@ const sure = async (): Promise<void> => {
     }
   }
   const timerData = Object.assign({}, state, { coverFile: undefined });
-  const res = await publishArticle(timerData);
+  const res = await publishArticle({ ...timerData, tabs_id: JSON.stringify(timerData.tabs_id) });
   if (res.code == 200) {
     useMessage({
       message: '发布文章成功',
@@ -115,6 +136,19 @@ const sure = async (): Promise<void> => {
     });
   }
 };
+
+const tabs = ref<any[]>([]);
+
+const getData = async (): Promise<void> => {
+  const res = await getAllTabs();
+  if (res.code == 200) {
+    tabs.value = res.data;
+  }
+};
+
+onMounted(() => {
+  getData();
+});
 </script>
 
 <style lang="scss" scoped>

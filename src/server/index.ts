@@ -77,7 +77,7 @@ interface Http {
   post: <t>(url: string, body?: any) => Promise<t>;
 }
 
-export const http: Http = {
+const http: Http = {
   async get(url, params) {
     return await new Promise((resolve, reject) => {
       request({ url, params, methods: 'GET' })

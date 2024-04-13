@@ -14,9 +14,14 @@ const getData = async (): Promise<void> => {
   if (res.code == 200) {
     state.tableData = res.data.list;
   }
+  console.log(res);
 };
 
-await getData();
+onMounted(() => {
+  nextTick(async () => {
+    await getData();
+  });
+});
 </script>
 
 <template>

@@ -42,9 +42,9 @@
                     />
                   </div>
                 </div>
-                <div class="flex justify-around mt-3">
-                  <button class="button-default w-18 h-8" @click="close">取消</button>
-                  <button class="button-default w-18 h-8" @click="sumbit">提交</button>
+                <div class="mt-3 flex justify-around">
+                  <button class="button-default h-8 w-18" @click="close">取消</button>
+                  <button class="button-default h-8 w-18" @click="sumbit">提交</button>
                 </div>
               </div>
             </div>

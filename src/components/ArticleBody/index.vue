@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getAllTabs } from '~/server/api/tab';
 import type { ArticleDetail } from '~/types/article';
 
 const router = useRouter();
@@ -8,6 +9,19 @@ const props = defineProps<{
   showDialog: () => void;
 }>();
 // const { data } = props;
+
+const tabs = ref<any[]>([]);
+
+const getData = async (): Promise<void> => {
+  const res = await getAllTabs();
+  if (res.code == 200) {
+    tabs.value = res.data;
+  }
+};
+
+onMounted(() => {
+  getData();
+});
 </script>
 
 <template>
@@ -41,6 +55,20 @@ const props = defineProps<{
         <div class="my-2 text-center font-semibold">
           <span class="mx-1">作者：{{ props.data.author.user_name }}</span>
           <span class="mx-1">发布时间：{{ props.data.created_time }}</span>
+        </div>
+        <!-- 标签 -->
+        <div class="flex-default">
+          <span
+            v-for="(items, index) in JSON.parse(props.data.tabs_id)"
+            :key="index"
+            class="mx-2 border-default border-2 border-solid p-1"
+          >
+            <span v-for="(item, index) in tabs" :key="index + item.id">
+              <span v-if="item.id == items">
+                {{ item.tab_name }}
+              </span>
+            </span>
+          </span>
         </div>
         <!-- 文章的内容 -->
         <div class="content_box">
