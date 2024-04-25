@@ -22,6 +22,7 @@ const hanleSumbit = async (): Promise<void> => {
         type: 'success'
       });
       userStore.setToken(res.token);
+      userStore.getUserInfo();
       router.push('/home');
     } else {
       useMessage({

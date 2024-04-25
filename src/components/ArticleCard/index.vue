@@ -10,7 +10,7 @@ const content = ref<string>('内容测试内容测试');
 
 <template>
   <nuxt-link :to="`/article/details/${data.id}`" target="_blank" class="color-black no-underline">
-    <div class="mt-4 border-default h-55 w-180 cursor-pointer border-3 shadow-lg">
+    <div class="my-3 border-default h-55 w-180 cursor-pointer border-3 shadow-lg">
       <div class="box-border h-full w-full flex flex-col justify-around px-2 py-2">
         <div class="box-border h-full w-full flex flex-1">
           <!-- 图片 -->

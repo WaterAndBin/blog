@@ -6,8 +6,6 @@ interface HttpRequest {
 }
 
 const request = (obj: HttpRequest): any => {
-  console.log(obj.body);
-
   const res = new Promise<void>((resolve, reject) => {
     const userStore = useUserStore();
 
@@ -50,7 +48,12 @@ const request = (obj: HttpRequest): any => {
         /* 处理响应数据 */
         console.log('请求成功');
         if (response._data.code == -1) {
+          useMessage({
+            message: '请登录',
+            type: 'warn'
+          });
           navigateTo('/account/login');
+          userStore.$reset();
         } else {
           resolve(response._data);
         }

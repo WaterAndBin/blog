@@ -19,15 +19,18 @@ const getData = async (): Promise<void> => {
   }
 };
 
-onMounted(() => {
-  getData();
-});
+// onMounted(() => {
+// nextTick(() => {
+// getData();
+// });
+// });
+getData();
 </script>
 
 <template>
   <div class="h-full w-full">
     <div
-      v-if="props.data"
+      v-show="props.data"
       class="articleBody_box m-[3rem_auto] border-default box-border min-h-40 w-180 border-3 p-3"
     >
       <div class="relative">
@@ -49,34 +52,36 @@ onMounted(() => {
         </div>
         <!-- 标题 -->
         <div class="text-center text-2xl font-semibold">
-          <span>{{ props.data.article_title }}</span>
+          <span>{{ props?.data?.article_title }}</span>
         </div>
         <!-- 作者的信息 -->
         <div class="my-2 text-center font-semibold">
-          <span class="mx-1">作者：{{ props.data.author.user_name }}</span>
-          <span class="mx-1">发布时间：{{ props.data.created_time }}</span>
+          <span class="mx-1">作者：{{ props?.data?.author.user_name }}</span>
+          <span class="mx-1">发布时间：{{ props?.data?.created_time }}</span>
         </div>
         <!-- 标签 -->
         <div class="flex-default">
-          <span
-            v-for="(items, index) in JSON.parse(props.data.tabs_id)"
-            :key="index"
-            class="mx-2 border-default border-2 border-solid p-1"
-          >
-            <span v-for="(item, index) in tabs" :key="index + item.id">
-              <span v-if="item.id == items">
-                {{ item.tab_name }}
+          <template v-if="JSON.parse(props?.data?.tabs_id ?? '[]').length == 0">
+            <span
+              v-for="(items, index) in JSON.parse(props?.data?.tabs_id ?? '[]')"
+              :key="index"
+              class="mx-2 border-default border-2 border-solid p-1"
+            >
+              <span v-for="(item, index) in tabs" :key="index + item.id">
+                <span v-if="item.id == items">
+                  {{ item.tab_name }}
+                </span>
               </span>
             </span>
-          </span>
+          </template>
         </div>
         <!-- 文章的内容 -->
         <div class="content_box">
-          <div v-html="props.data.article_content"></div>
+          <div v-html="props?.data?.article_content"></div>
         </div>
       </div>
     </div>
-    <div v-else class="mt-10 h-full flex-default flex-col">
+    <div v-show="!props.data" class="mt-10 h-full flex-default flex-col">
       <div class="text-3xl font-600">找不到内容了~</div>
       <div class="mt-4"><NotStatus></NotStatus></div>
       <div>

@@ -27,3 +27,14 @@ export async function getComments(
     article_id: id
   });
 }
+
+/**
+ * 发布评论
+ * @param data 数据
+ * @returns
+ */
+export async function deleteComments(id: number): Promise<{ code: number; message: string }> {
+  return await http.post<{ code: number; message: string }>('/comments/deleteComments', {
+    id
+  });
+}

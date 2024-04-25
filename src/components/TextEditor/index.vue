@@ -7,7 +7,7 @@
       <!-- class="box-border h-auto max-w-200 border-2 border-gray-300/70 rounded-lg border-solid shadow-lg" -->
       <!-- 各种功能 -->
       <div
-        class="box-border h-14 w-full flex select-none items-center border-gray-900/10 rounded-t-lg px-1 py-2 shadow-md"
+        class="box-border h-14 min-w-160 w-full flex select-none items-center border-gray-900/10 rounded-t-lg px-1 py-2 shadow-md"
       >
         <div ref="editorNav" class="w-full">
           <div class="w-full flex items-center justify-around">

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { getArticleDetail } from '~/server/api/article';
-import { getComments, reqComments } from '~/server/api/comments';
+import { deleteComments, getComments, reqComments } from '~/server/api/comments';
 import type { ArticleDetail } from '~/types/article';
 
 const router = useRouter();
 const route = useRoute();
 const { id } = route.params;
+const userStore = useUserStore();
 
 /* dom */
 const ReportDialogRef = ref();
@@ -24,11 +25,6 @@ const getData = async (): Promise<void> => {
     if (res.code == 200) {
       timerData.value = res.data;
     }
-    /* 获取评论 */
-    const result = await getComments(Number(id));
-    if (result.code == 200) {
-      commentsTotal.value = result.data;
-    }
   } else {
     router.push('/home');
   }
@@ -38,21 +34,60 @@ const show = (): void => {
   ReportDialogRef.value.show(Number(id));
 };
 
-const content = ref('');
-const reqCom = async (): Promise<void> => {
-  const res = await reqComments(content.value, Number(id));
-  console.log(res);
-  if (res.code == 200) {
-    console.log('评论成功');
+/**
+ * 获取评论数据
+ */
+const getCom = async (): Promise<void> => {
+  const result = await getComments(Number(id));
+  if (result.code == 200) {
+    commentsTotal.value = result.data;
   }
 };
 
-// await getData();
+const content = ref('');
+/**
+ * 发送评论
+ */
+const reqCom = async (): Promise<void> => {
+  const res = await reqComments(content.value, Number(id));
+  if (res.code == 200) {
+    useMessage({
+      message: '评论成功',
+      type: 'success'
+    });
+    getCom();
+  } else {
+    useMessage({
+      message: '评论失败',
+      type: 'error'
+    });
+  }
+};
+
+const deleteCom = async (id: number): Promise<void> => {
+  const res = await deleteComments(id);
+  if (res.code == 200) {
+    getCom();
+    useMessage({
+      message: '删除评论成功',
+      type: 'success'
+    });
+  } else {
+    useMessage({
+      message: '删除评论失败',
+      type: 'error'
+    });
+  }
+};
+
 onMounted(() => {
   nextTick(() => {
     getData();
+    getCom();
   });
 });
+// await getData();
+// await getCom();
 </script>
 
 <template>
@@ -72,12 +107,24 @@ onMounted(() => {
       >
         <div class="comment">
           <p class="comment-text">{{ items.reviewer_content }}</p>
-          <p class="comment-author">
-            由 {{ items.author.user_name }} 发布于 {{ items.reviewer_time }}
+          <p class="flex items-center justify-between">
+            <span class="font-italic text-gray-500">
+              由 {{ items.author.user_name }} 发布于 {{ items.reviewer_time }}
+            </span>
+            <span>
+              <button
+                v-if="userStore?.userInfo?.id == items.reviewer_id"
+                class="border-default border-2 bg-none"
+                @click="deleteCom(items.id)"
+              >
+                删除
+              </button>
+            </span>
           </p>
         </div>
       </div>
     </div>
+
     <!-- 举报弹窗 -->
     <ReportDialog ref="ReportDialogRef"></ReportDialog>
   </div>
@@ -111,14 +158,6 @@ onMounted(() => {
 }
 
 .comment {
-  @apply mb-2 border-b border-gray-200 pb-2;
-}
-
-.comment-text {
-  @apply mb-1;
-}
-
-.comment-author {
-  @apply font-italic text-gray-500;
+  @apply border-b border-gray-200;
 }
 </style>

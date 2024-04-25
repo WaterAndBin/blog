@@ -42,11 +42,11 @@ export const editorButton: EditorButton[] = [
     title: '加粗',
     actions: 'hold'
   },
-  {
-    name: 'editor-color.svg',
-    title: '颜色',
-    actions: 'color'
-  },
+  // {
+  //   name: 'editor-color.svg',
+  //   title: '颜色',
+  //   actions: 'color'
+  // },
   {
     name: 'editor-italic.svg',
     title: '斜线',
@@ -62,16 +62,16 @@ export const editorButton: EditorButton[] = [
     title: '下划线',
     actions: 'underline'
   },
-  {
-    name: 'editor-orderedLists.svg',
-    title: '有序列表',
-    actions: 'order'
-  },
-  {
-    name: 'editor-unorderedListings.svg',
-    title: '无序列表',
-    actions: 'disorder'
-  },
+  // {
+  //   name: 'editor-orderedLists.svg',
+  //   title: '有序列表',
+  //   actions: 'order'
+  // },
+  // {
+  //   name: 'editor-unorderedListings.svg',
+  //   title: '无序列表',
+  //   actions: 'disorder'
+  // },
   // {
   //   name: 'editor-align.svg',
   //   title: '对齐',

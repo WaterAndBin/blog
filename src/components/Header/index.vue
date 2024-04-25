@@ -1,5 +1,15 @@
 <script setup lang="ts">
 const router = useRouter();
+
+const userStore = useUserStore();
+
+const reset = (): void => {
+  userStore.$reset();
+  useMessage({
+    message: '退出成功',
+    type: 'success'
+  });
+};
 </script>
 
 <template>
@@ -17,7 +27,13 @@ const router = useRouter();
     </div>
     <div class="flex items-center">
       <div class="mr-5">
-        <span class="cursor-pointer text-lg" @click="router.push('/account/login')">登录</span>
+        <template v-if="!userStore.userInfo.user_name">
+          <span class="cursor-pointer text-lg" @click="router.push('/account/login')">登录</span>
+        </template>
+        <template v-else>
+          <span class="mr-5 text-lg">您好，{{ userStore.userInfo.user_name }}</span>
+          <span class="cursor-pointer text-lg" @click="reset">退出登录</span>
+        </template>
       </div>
       <div>
         <button

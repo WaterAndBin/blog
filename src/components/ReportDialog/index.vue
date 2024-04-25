@@ -92,7 +92,7 @@ const rejectButton = [
 const initState = {
   showMask: false,
   showAnimate: false,
-  id: -1,
+  article_id: -1,
   reject_type: 1,
   reject_reason: ''
 };
@@ -104,7 +104,7 @@ const state = reactive({
  * 展示
  */
 const show = (id: number): void => {
-  state.id = id;
+  state.article_id = id;
   state.showMask = true;
   setTimeout(() => {
     state.showAnimate = true;
@@ -132,11 +132,22 @@ const cancel = (): void => {
 
 const sumbit = async (): Promise<void> => {
   const res = await reportArticle({
-    id: state.id,
+    articleId: state.article_id,
     rejectType: state.reject_type,
     rejectReason: state.reject_reason
   });
-  console.log(res);
+  if (res.code == 200) {
+    useMessage({
+      message: res.message,
+      type: 'success'
+    });
+    close();
+  } else {
+    useMessage({
+      message: '举报失败',
+      type: 'error'
+    });
+  }
 };
 
 defineExpose({

@@ -1,5 +1,5 @@
 import http from '~/server';
-import type { userAccount } from '~/types/user';
+import type { userAccount, UserInfo } from '~/types/user';
 
 /**
  * 注册
@@ -23,4 +23,13 @@ export async function userLogin(
   return await http.post<{ code: number; token: string; message: string }>('/user/login', {
     ...data
   });
+}
+
+/**
+ * 登录
+ * @param data 数据
+ * @returns
+ */
+export async function getMyInfo(): Promise<{ code: number; data: UserInfo }> {
+  return await http.get<{ code: number; data: UserInfo }>('/user/getMyInfo');
 }

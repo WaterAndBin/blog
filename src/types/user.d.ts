@@ -27,3 +27,17 @@ export interface UserList {
   created_time: string; // 创建时间
   status: number; //状态
 }
+
+/**
+ * 用户个人信息
+ */
+export interface UserInfo {
+  account: string;
+  created_time: string;
+  id: number;
+  is_deleted: number;
+  password: string;
+  role_id: number;
+  status: number;
+  user_name: string;
+}
