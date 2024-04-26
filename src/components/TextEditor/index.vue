@@ -2,12 +2,12 @@
   <div class="box-border">
     <div
       ref="editorBody"
-      class="border-default box-border h-auto max-w-200 border-3 rounded-lg shadow-lg"
+      class="border-default box-border h-auto max-w-185 w-185 border-3 rounded-lg shadow-lg"
     >
       <!-- class="box-border h-auto max-w-200 border-2 border-gray-300/70 rounded-lg border-solid shadow-lg" -->
       <!-- 各种功能 -->
       <div
-        class="box-border h-14 min-w-160 w-full flex select-none items-center border-gray-900/10 rounded-t-lg px-1 py-2 shadow-md"
+        class="box-border h-14 w-full flex select-none items-center border-gray-900/10 rounded-t-lg px-1 py-2 shadow-md"
       >
         <div ref="editorNav" class="w-full">
           <div class="w-full flex items-center justify-around">
@@ -62,6 +62,7 @@ import Title from './Title.vue';
 import type { EditorButton } from '~/utils/editorDefaultButton';
 import { tagNameAction } from '~/utils/editorDefaultButton';
 import { findSameDocument } from '~/utils/findSameDocument';
+import { picUpload } from '~/server/api/upload';
 
 // const props = defineProps({
 //   modelValue: {
@@ -78,8 +79,9 @@ const emit = defineEmits<{
 
 // const content =
 // '<p>123 <strong>4<s>6</s>5</strong> ddd<strong>asd</strong>789<u><i>hallo</i></u></p>';
-const content =
-  '<p>123 <strong>4<s>6</s>5</strong> <strong>test</strong> ddd <strong><u>a<i>sd78</i>9</u></strong></p>';
+// const content =
+//   '<p>123 <strong>4<s>6</s>5</strong> <strong>test</strong> ddd <strong><u>a<i>sd78</i>9</u></strong></p>';
+const content = '<p><br/></p>';
 
 /* 仓库 */
 const editorButton = useEditorButton();
@@ -89,7 +91,7 @@ const editor = ref<HTMLElement | null>(null);
 const editorNav = ref<HTMLElement | null>(null);
 const editorBody = ref<HTMLElement | null>(null);
 
-const changeContent = (event: Event): void => {
+const changeContent = (): void => {
   const editorElement = editor.value; // 获取 <div id="editor" ...> 元素
   if (editorElement) {
     const editorHTML = editorElement.innerHTML; // 获取编辑器内容的 HTML
@@ -745,6 +747,40 @@ const ButtonComponent = defineComponent({
   }
 });
 
+/**
+ * 处理图片上传
+ * @param node
+ */
+const handleImage = async (node: HTMLImageElement): Promise<void> => {
+  console.log(node);
+  const base64Image = node.src;
+  // const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const blob = dataURItoBlob(base64Image);
+  const formData = new FormData();
+  formData.append('file', blob, 'image.png'); // 假设上传的文件名为image.png
+
+  const res = await picUpload(formData);
+  if (res.code == 200) {
+    node.src = 'http://127.0.0.1:9090/' + res.data;
+    changeContent();
+  }
+};
+
+/**
+ * 将Base64编码的字符串转换为Blob对象
+ * @param dataURI
+ */
+const dataURItoBlob = (dataURI: string): Blob => {
+  const byteString = atob(dataURI.split(',')[1]);
+  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], { type: mimeString });
+};
+
 onMounted(() => {
   /* 挂载全局点击事件 */
   window.addEventListener('click', handleOutsideClick);
@@ -767,6 +803,14 @@ onMounted(() => {
             });
             addedNode.dispatchEvent(event);
             getMouseSelection(event);
+          }
+          if (addedNode.nodeName === 'IMG') {
+            const imageBase = addedNode as HTMLImageElement;
+            console.log(imageBase);
+            if (imageBase.src.includes('data:image')) {
+              //   console.log(imageBase.src.includes('data:image'));
+              handleImage(imageBase);
+            }
           }
         }
       }

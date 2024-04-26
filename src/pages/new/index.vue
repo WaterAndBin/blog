@@ -113,6 +113,8 @@ const clearImage = (): void => {
 };
 
 const sure = async (): Promise<void> => {
+  console.log(state.article_content);
+
   /* 看是否有封面 */
   if (state.coverFile.name !== '' && state.coverFile.size !== 0) {
     const picData = new FormData();
@@ -147,7 +149,9 @@ const getData = async (): Promise<void> => {
 };
 
 onMounted(() => {
-  getData();
+  nextTick(() => {
+    getData();
+  });
 });
 </script>
 

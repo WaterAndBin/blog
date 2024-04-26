@@ -1,4 +1,5 @@
- .pre-box{
+/* 代码块 */
+.pre-box{
     @apply bg-black color-white my-3 w-full pb-2 box-border text-sm rounded-md;
 
     .pre-header{
@@ -64,5 +65,12 @@ hr{
 .articleBody_box{
     button{
         display: none !important;
+    }
+}
+
+/* 富文本编辑器 */
+.editor-box,.content_box {
+    img{
+        max-width: 100%;
     }
 }

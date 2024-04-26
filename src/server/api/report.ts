@@ -18,7 +18,7 @@ export async function reportArticle({
   return await http.post<{ code: number; data: ArticleDetail; message: string }>(
     '/report/reportArticle',
     {
-      articleId,
+      article_id: articleId,
       reject_type: rejectType,
       reject_reason: rejectReason
     }
